@@ -8,7 +8,18 @@ const SELECTORS = {
   jobType: '.text-sm.font-semibold:first-of-type',
   location: 'a[href*="google.com/maps"]',
   timeAgo: '.text-xs.text-right span',
-  verifiedBadge: 'svg[width="13"][height="13"]'
+  verifiedBadge: 'svg[width="13"][height="13"]',
+
+  // Modal selectors for detailed lead info
+  modal: {
+    container: '#lead-details-modal',
+    customerName: '.text-lg.font-normal',
+    jobTitle: '.text-xl.font-semibold',
+    description: '.text-base.font-normal.mb-5',
+    budget: '.flex.items-end.space-x-1\\.5:first-of-type .text-base.font-semibold',
+    timing: '.flex.items-end.space-x-1\\.5:nth-of-type(2) .text-base.font-semibold',
+    locationLink: 'a[href*="google.com/maps"]'
+  }
 };
 
 let observer = null;
@@ -78,19 +89,159 @@ function getAllVisibleLeads() {
   return leads;
 }
 
+// Auto-click first lead to get full details
+async function autoClickFirstLead() {
+  try {
+    const leadCards = document.querySelectorAll(SELECTORS.leadCard);
+
+    if (leadCards.length === 0) {
+      console.log('No leads to click');
+      return null;
+    }
+
+    // Click the FIRST lead
+    const firstLead = leadCards[0];
+    const leadId = firstLead.getAttribute('id').replace('matched-lead-card-', '');
+
+    console.log(`🖱️ Auto-clicking first lead: ${leadId}`);
+    firstLead.click();
+
+    // Wait for modal to appear
+    const modalData = await waitForModalAndExtractData();
+
+    if (modalData) {
+      console.log('✅ Modal data extracted:', modalData);
+      return modalData;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error auto-clicking lead:', error);
+    return null;
+  }
+}
+
+// Wait for modal to appear and extract full lead details
+function waitForModalAndExtractData() {
+  return new Promise((resolve) => {
+    let attempts = 0;
+    const maxAttempts = 20; // 2 seconds max wait
+
+    const checkModal = setInterval(() => {
+      attempts++;
+
+      const modal = document.querySelector(SELECTORS.modal.container);
+
+      if (modal && !modal.classList.contains('hidden')) {
+        clearInterval(checkModal);
+
+        // Extract full details from modal
+        const leadData = extractDetailsFromModal(modal);
+        resolve(leadData);
+      }
+
+      if (attempts >= maxAttempts) {
+        clearInterval(checkModal);
+        console.warn('Modal did not appear within timeout');
+        resolve(null);
+      }
+    }, 100); // Check every 100ms
+  });
+}
+
+// Extract full lead details from modal
+function extractDetailsFromModal(modal) {
+  try {
+    // Customer name
+    const customerNameEl = modal.querySelector(SELECTORS.modal.customerName);
+    const customerName = customerNameEl ? customerNameEl.textContent.trim() : 'Unknown';
+
+    // Job title (includes type and location)
+    const jobTitleEl = modal.querySelector(SELECTORS.modal.jobTitle);
+    const jobTitle = jobTitleEl ? jobTitleEl.textContent.trim() : '';
+
+    // Parse job type and location from title
+    // Example: "General carpentry in Aspendale, VIC, 3195, 18kms"
+    let jobType = 'General Service';
+    let location = '';
+
+    if (jobTitle.includes(' in ')) {
+      const parts = jobTitle.split(' in ');
+      jobType = parts[0].trim();
+      location = parts[1].trim();
+    }
+
+    // Description
+    const descriptionEl = modal.querySelector(SELECTORS.modal.description);
+    const description = descriptionEl ? descriptionEl.textContent.trim() : '';
+
+    // Budget
+    const budgetEl = modal.querySelector(SELECTORS.modal.budget);
+    const budget = budgetEl ? budgetEl.textContent.trim() : 'Not specified';
+
+    // Timing
+    const timingEl = modal.querySelector(SELECTORS.modal.timing);
+    const timing = timingEl ? timingEl.textContent.trim() : 'Not specified';
+
+    // Lead ID from URL or modal
+    const leadIdMatch = window.location.href.match(/lead[/-](\d+)/);
+    const leadId = leadIdMatch ? leadIdMatch[1] : Date.now().toString();
+
+    return {
+      leadId,
+      customerName,
+      jobType,
+      location,
+      description,
+      budget,
+      timing,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error extracting modal data:', error);
+    return null;
+  }
+}
+
 // Handle new lead detected
-function handleNewLead(lead) {
+async function handleNewLead(lead) {
   console.log('🆕 NEW LEAD DETECTED:', lead);
 
-  // Send to background script
-  chrome.runtime.sendMessage({
-    action: 'newLeadDetected',
-    lead: lead
-  }).then(response => {
-    console.log('Lead sent to background:', response);
-  }).catch(error => {
-    console.error('Error sending lead to background:', error);
-  });
+  // Auto-click first lead to get full details
+  console.log('⏳ Auto-clicking first lead to extract full details...');
+  const fullDetails = await autoClickFirstLead();
+
+  if (fullDetails) {
+    console.log('✅ Full lead details extracted from modal');
+
+    // Merge basic lead data with full details
+    const completeLead = {
+      ...lead,
+      ...fullDetails
+    };
+
+    // Send to background script
+    chrome.runtime.sendMessage({
+      action: 'newLeadDetected',
+      lead: completeLead
+    }).then(response => {
+      console.log('Lead sent to background:', response);
+    }).catch(error => {
+      console.error('Error sending lead to background:', error);
+    });
+  } else {
+    console.error('❌ Failed to extract full lead details');
+
+    // Still send basic lead info
+    chrome.runtime.sendMessage({
+      action: 'newLeadDetected',
+      lead: lead
+    }).then(response => {
+      console.log('Lead sent to background (basic info only):', response);
+    }).catch(error => {
+      console.error('Error sending lead to background:', error);
+    });
+  }
 }
 
 // Start monitoring for new leads

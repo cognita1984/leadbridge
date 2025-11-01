@@ -8,8 +8,8 @@ namespace LeadBridge.Services;
 
 public interface ITwilioService
 {
-    Task<string> InitiateCallToTradieAsync(string tradiePhone, string leadId, string customerName, string jobType, string location);
-    string GenerateTradieCallTwiML(string leadId, string customerName, string jobType, string location);
+    Task<string> InitiateCallToTradieAsync(string tradiePhone, string leadId, string customerName, string jobType, string location, string? description = null, string? budget = null, string? timing = null);
+    string GenerateTradieCallTwiML(string leadId, string customerName, string jobType, string location, string? description = null, string? budget = null, string? timing = null);
     string GenerateCustomerBridgeTwiML(string customerPhone);
 }
 
@@ -35,12 +35,24 @@ public class TwilioService : ITwilioService
         string leadId,
         string customerName,
         string jobType,
-        string location)
+        string location,
+        string? description = null,
+        string? budget = null,
+        string? timing = null)
     {
         try
         {
             // Build TwiML URL for initial greeting and gather
-            var twimlUrl = $"{_callbackBaseUrl}/api/twilio/tradie-greeting?leadId={leadId}&customerName={Uri.EscapeDataString(customerName)}&jobType={Uri.EscapeDataString(jobType)}&location={Uri.EscapeDataString(location)}";
+            var queryParams = $"leadId={leadId}&customerName={Uri.EscapeDataString(customerName)}&jobType={Uri.EscapeDataString(jobType)}&location={Uri.EscapeDataString(location)}";
+
+            if (!string.IsNullOrWhiteSpace(description))
+                queryParams += $"&description={Uri.EscapeDataString(description)}";
+            if (!string.IsNullOrWhiteSpace(budget))
+                queryParams += $"&budget={Uri.EscapeDataString(budget)}";
+            if (!string.IsNullOrWhiteSpace(timing))
+                queryParams += $"&timing={Uri.EscapeDataString(timing)}";
+
+            var twimlUrl = $"{_callbackBaseUrl}/api/twilio/tradie-greeting?{queryParams}";
 
             var call = await CallResource.CreateAsync(
                 to: new PhoneNumber(tradiePhone),
@@ -61,16 +73,38 @@ public class TwilioService : ITwilioService
         }
     }
 
-    public string GenerateTradieCallTwiML(string leadId, string customerName, string jobType, string location)
+    public string GenerateTradieCallTwiML(
+        string leadId,
+        string customerName,
+        string jobType,
+        string location,
+        string? description = null,
+        string? budget = null,
+        string? timing = null)
     {
         var response = new VoiceResponse();
 
-        // Greeting message with lead details
+        // Build detailed greeting message
         var message = $"You have a new ServiceSeeking lead. " +
                      $"Customer name: {customerName}. " +
                      $"Job type: {jobType}. " +
-                     $"Location: {location}. " +
-                     $"Press 1 to call the customer now, or press 2 to skip this lead.";
+                     $"Location: {location}. ";
+
+        // Add optional details if available
+        if (!string.IsNullOrWhiteSpace(description))
+        {
+            // Limit description length for speech
+            var shortDesc = description.Length > 100 ? description.Substring(0, 100) + "..." : description;
+            message += $"Description: {shortDesc}. ";
+        }
+
+        if (!string.IsNullOrWhiteSpace(budget))
+            message += $"Budget: {budget}. ";
+
+        if (!string.IsNullOrWhiteSpace(timing))
+            message += $"Timing: {timing}. ";
+
+        message += "Press 1 to call the customer now, or press 2 to skip this lead.";
 
         var gather = new Gather(
             numDigits: 1,

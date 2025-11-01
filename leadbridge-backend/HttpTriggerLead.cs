@@ -98,7 +98,10 @@ public class HttpTriggerLead
                     lead.LeadId,
                     lead.CustomerName,
                     lead.JobType,
-                    lead.Location);
+                    lead.Location,
+                    lead.Description,
+                    lead.Budget,
+                    lead.Timing);
 
                 // Update lead status
                 await leadStorage.UpdateLeadStatusAsync(lead.LeadId, DateTime.UtcNow, "Calling", callSid);
@@ -172,10 +175,13 @@ public class HttpTriggerLead
             var customerName = query["customerName"] ?? "Unknown Customer";
             var jobType = query["jobType"] ?? "General Service";
             var location = query["location"] ?? "Unknown Location";
+            var description = query["description"];
+            var budget = query["budget"];
+            var timing = query["timing"];
 
             _logger.LogInformation("Generating TwiML for lead: {LeadId}", leadId);
 
-            var twiml = _twilioService.GenerateTradieCallTwiML(leadId, customerName, jobType, location);
+            var twiml = _twilioService.GenerateTradieCallTwiML(leadId, customerName, jobType, location, description, budget, timing);
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "text/xml");

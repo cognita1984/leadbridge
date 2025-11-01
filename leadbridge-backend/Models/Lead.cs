@@ -25,6 +25,15 @@ public class Lead
     [JsonPropertyName("tradiePhone")]
     public string TradiePhone { get; set; } = string.Empty;
 
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("budget")]
+    public string? Budget { get; set; }
+
+    [JsonPropertyName("timing")]
+    public string? Timing { get; set; }
+
     [JsonPropertyName("timestamp")]
     public string Timestamp { get; set; } = DateTime.UtcNow.ToString("o");
 }

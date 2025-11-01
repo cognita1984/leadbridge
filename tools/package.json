@@ -1,0 +1,11 @@
+{
+  "name": "leadbridge-testing-tools",
+  "version": "1.0.0",
+  "description": "Testing tools for LeadBridge AU",
+  "scripts": {
+    "study-serviceseeking": "node study-serviceseeking.js"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  }
+}

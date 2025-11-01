@@ -1,0 +1,12 @@
+[
+  {
+    "selector": "[class*=\"lead\"]",
+    "count": 21,
+    "firstElementHTML": "<button aria-expanded=\"false\" class=\"dropdown-button flex top-full items-center gap-x-2 text-sm font-light leading-6 font-semibold py-1 px-2 rounded-md hover:bg-base-gray-50 focus:bg-base-gray-50\" type=\"button\"><div class=\"p-4 font-bold text-lg rounded-full text-white justify-center flex items-center h-8 w-8\" style=\"background-color: #FF9800;\">N</div><div class=\"flex flex-col items-start\"><p class=\"text-sm font-medium text-old-gray-tones-900 capitalize\">Nick</p><p class=\"text-xs font-normal text"
+  },
+  {
+    "selector": "[class*=\"quote\"]",
+    "count": 2,
+    "firstElementHTML": "<div class=\"infinite-scroll-component sent-quotes hide-scroll-bar\" style=\"height: auto; overflow: auto;\"></div>"
+  }
+]

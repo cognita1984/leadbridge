@@ -38,7 +38,8 @@ LeadBridge AU detects new ServiceSeeking leads and automatically:
 leadbridge/
 ├── leadbridge-extension/     # Chrome extension
 │   ├── manifest.json
-│   ├── background.js        # Polling & lead detection
+│   ├── background.js        # Service worker & lead processing
+│   ├── content.js           # Real-time lead monitoring
 │   ├── popup.html          # UI
 │   └── popup.js
 ├── leadbridge-backend/      # Azure Functions backend
@@ -62,6 +63,22 @@ leadbridge/
 - Chrome browser (for extension)
 - .NET 8 SDK (for local development)
 - Azure CLI (for local development)
+
+## Quick Start
+
+### Option 1: Test Locally (Recommended First)
+
+1. **Load Extension:** Follow **[TESTING.md](TESTING.md)** for step-by-step local testing guide
+2. **Verify Selectors:** Ensure lead detection works with ServiceSeeking
+3. **Test Extraction:** Validate customer name, job type, and location are correctly extracted
+
+### Option 2: Deploy to Azure
+
+1. **Deploy Backend:** Follow **[DEPLOYMENT.md](DEPLOYMENT.md)** for Azure deployment
+2. **Configure Extension:** Update API endpoint to your Azure Function URL
+3. **Test End-to-End:** Verify leads trigger ACS calls to tradie
+
+---
 
 ## Deployment
 

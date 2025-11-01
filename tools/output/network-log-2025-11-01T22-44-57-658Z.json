@@ -93498,5 +93498,1358 @@
       "server": "cloudflare",
       "nr-rate-limited": "allowed"
     }
+  },
+  {
+    "timestamp": "2025-11-01T23:07:16.679Z",
+    "type": "request",
+    "method": "POST",
+    "url": "https://bam.nr-data.net/jserrors/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=874641&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "https://www.serviceseeking.com.au/",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Chromium\";v=\"141\", \"Not?A_Brand\";v=\"8\"",
+      "content-type": "text/plain",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "resourceType": "xhr"
+  },
+  {
+    "timestamp": "2025-11-01T23:07:16.961Z",
+    "type": "response",
+    "status": 200,
+    "url": "https://bam.nr-data.net/jserrors/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=874641&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "cf-cache-status": "DYNAMIC",
+      "x-envoy-upstream-service-time": "0",
+      "connection": "keep-alive",
+      "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "GET, POST, PUT, HEAD, OPTIONS",
+      "cf-ray": "997f0c200f80d853-MEL",
+      "access-control-allow-origin": "https://www.serviceseeking.com.au",
+      "content-length": "24",
+      "date": "Sat, 01 Nov 2025 23:07:16 GMT",
+      "content-type": "image/gif",
+      "vary": "accept-encoding",
+      "server": "cloudflare",
+      "nr-rate-limited": "allowed"
+    }
+  },
+  {
+    "timestamp": "2025-11-01T23:07:46.694Z",
+    "type": "request",
+    "method": "POST",
+    "url": "https://bam.nr-data.net/jserrors/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=904658&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "https://www.serviceseeking.com.au/",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Chromium\";v=\"141\", \"Not?A_Brand\";v=\"8\"",
+      "content-type": "text/plain",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "resourceType": "xhr"
+  },
+  {
+    "timestamp": "2025-11-01T23:07:48.161Z",
+    "type": "response",
+    "status": 200,
+    "url": "https://bam.nr-data.net/jserrors/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=904658&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "cf-cache-status": "DYNAMIC",
+      "x-envoy-upstream-service-time": "1",
+      "connection": "keep-alive",
+      "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "GET, POST, PUT, HEAD, OPTIONS",
+      "cf-ray": "997f0cdbaf59d853-MEL",
+      "access-control-allow-origin": "https://www.serviceseeking.com.au",
+      "content-length": "24",
+      "date": "Sat, 01 Nov 2025 23:07:47 GMT",
+      "content-type": "image/gif",
+      "vary": "accept-encoding",
+      "server": "cloudflare",
+      "nr-rate-limited": "allowed"
+    }
+  },
+  {
+    "timestamp": "2025-11-01T23:07:56.488Z",
+    "type": "request",
+    "method": "GET",
+    "url": "https://www.serviceseeking.com.au/leads/5181166?include=attachments,user,suburb,sub_categories",
+    "headers": {
+      "x-newrelic-id": "Uw8AVEVRCgsB",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "https://www.serviceseeking.com.au/v2/leads",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/vnd.api+json; version=1",
+      "sec-ch-ua": "\"Chromium\";v=\"141\", \"Not?A_Brand\";v=\"8\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "resourceType": "xhr"
+  },
+  {
+    "timestamp": "2025-11-01T23:07:56.736Z",
+    "type": "response",
+    "status": 200,
+    "url": "https://www.serviceseeking.com.au/leads/5181166?include=attachments,user,suburb,sub_categories",
+    "headers": {
+      "strict-transport-security": "max-age=63072000; includeSubDomains",
+      "x-request-id": "9ed17767-1e3a-4de2-8bd9-c6eb563cee17",
+      "cache-control": "max-age=0, private, must-revalidate",
+      "etag": "W/\"b2feb711506db9eb7e61155e90a1edd8\"",
+      "x-permitted-cross-domain-policies": "none",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-content-type-options": "nosniff",
+      "x-download-options": "noopen",
+      "date": "Sat, 01 Nov 2025 23:07:55 GMT",
+      "x-xss-protection": "1; mode=block",
+      "content-type": "application/vnd.api+json",
+      "vary": "Accept",
+      "server": "nginx",
+      "x-runtime": "0.105893",
+      "x-frame-options": "SAMEORIGIN"
+    }
+  },
+  {
+    "timestamp": "2025-11-01T23:07:56.736Z",
+    "type": "request",
+    "method": "POST",
+    "url": "https://www.serviceseeking.com.au/leads/5181166/viewed/",
+    "headers": {
+      "x-newrelic-id": "Uw8AVEVRCgsB",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "https://www.serviceseeking.com.au/v2/leads",
+      "sec-ch-ua": "\"Chromium\";v=\"141\", \"Not?A_Brand\";v=\"8\"",
+      "sec-ch-ua-mobile": "?0",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/vnd.api+json; version=1",
+      "content-type": "application/x-www-form-urlencoded"
+    },
+    "resourceType": "xhr"
+  },
+  {
+    "timestamp": "2025-11-01T23:07:56.795Z",
+    "type": "response",
+    "status": 204,
+    "url": "https://www.serviceseeking.com.au/leads/5181166/viewed/",
+    "headers": {
+      "strict-transport-security": "max-age=63072000; includeSubDomains",
+      "x-request-id": "595bbdf7-552c-48bf-af99-b6ebdc688538",
+      "cache-control": "no-cache",
+      "connection": "keep-alive",
+      "x-permitted-cross-domain-policies": "none",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-download-options": "noopen",
+      "date": "Sat, 01 Nov 2025 23:07:55 GMT",
+      "x-xss-protection": "1; mode=block",
+      "vary": "Accept",
+      "server": "nginx",
+      "x-runtime": "0.023293",
+      "x-frame-options": "SAMEORIGIN"
+    }
+  },
+  {
+    "timestamp": "2025-11-01T23:08:00.945Z",
+    "type": "request",
+    "method": "GET",
+    "url": "https://www.serviceseeking.com.au/leads?include=sub_categories,suburb,user&page[number]=1&sort=newest&pinned_lead_id=",
+    "headers": {
+      "x-newrelic-id": "Uw8AVEVRCgsB",
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "https://www.serviceseeking.com.au/v2/leads",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "accept": "application/vnd.api+json; version=3",
+      "sec-ch-ua": "\"Chromium\";v=\"141\", \"Not?A_Brand\";v=\"8\"",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "resourceType": "xhr"
+  },
+  {
+    "timestamp": "2025-11-01T23:08:01.868Z",
+    "type": "response",
+    "status": 200,
+    "url": "https://www.serviceseeking.com.au/leads?include=sub_categories,suburb,user&page[number]=1&sort=newest&pinned_lead_id=",
+    "headers": {
+      "x-request-id": "e235c78f-3238-4a26-8c6e-f26557f40d31",
+      "content-encoding": "gzip",
+      "etag": "W/\"de2e4ea5637fc38708318177695bc645\"",
+      "x-permitted-cross-domain-policies": "none",
+      "x-content-type-options": "nosniff",
+      "date": "Sat, 01 Nov 2025 23:08:01 GMT",
+      "content-type": "application/json; charset=utf-8",
+      "vary": "Accept",
+      "x-runtime": "0.873266",
+      "x-frame-options": "SAMEORIGIN",
+      "strict-transport-security": "max-age=63072000; includeSubDomains",
+      "cache-control": "max-age=0, private, must-revalidate",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "x-download-options": "noopen",
+      "x-xss-protection": "1; mode=block",
+      "server": "nginx"
+    },
+    "body": {
+      "data": [
+        {
+          "id": "5181166",
+          "type": "jobs",
+          "attributes": {
+            "status": "approved",
+            "budget": null,
+            "createdAt": "2025-11-02T00:12:41+11:00",
+            "description": "I need help with hanging my swing (can fit 3 people sitting side by side)  in the decking area. The swing has 4 mounting points on each corner of the swing and expected to be mounted on 4 points in the ceiling. I believe the ceiling has a timber frame, bu unsure if reinforcement will be needed. The quote should include any additional material required to hang the swing. Inspections are welcome before quote.\n\nVideo walkthrough: https://1drv.ms/v/c/72f4b0b7dc0205d8/EZv7lkJ6pxJGhADQSk1lr-ABJdmzV2nK5-6WKDUB509now?e=zupPJA\n\n\nSpecific Job Details: \n\n\nSchedule: Not Specified\n\n\nBudget: Not Specified\n\nSite Visit: Anytime",
+            "name": "General Carpentry Job | Aspendale",
+            "auditedAt": "2025-11-02T00:13:20+11:00",
+            "userName": "Priank",
+            "distanceAway": "18kms",
+            "attachmentCount": 1,
+            "new": false,
+            "quoteAction": "{\"auto\":false,\"contactButtonText\":\"Contact Customer\"}",
+            "exclusiveJob": false,
+            "limitedCompetition": false,
+            "budgetInfo": "No Set Budget",
+            "startingLabel": "Next couple of weeks",
+            "nonSpecificDescription": "I need help with hanging my swing (can fit 3 people sitting side by side)  in the decking area. The swing has 4 mounting points on each corner of the swing and expected to be mounted on 4 points in the ceiling. I believe the ceiling has a timber frame, bu unsure if reinforcement will be needed. The quote should include any additional material required to hang the swing. Inspections are welcome before quote.\n\nVideo walkthrough: https://1drv.ms/v/c/72f4b0b7dc0205d8/EZv7lkJ6pxJGhADQSk1lr-ABJdmzV2nK5-6WKDUB509now?e=zupPJA\n\n\n",
+            "siteVisitSchedule": "Anytime",
+            "title": "Priank's General carpentry job",
+            "unquotableMessage": []
+          },
+          "relationships": {
+            "suburb": {
+              "data": {
+                "id": "403",
+                "type": "suburbs"
+              }
+            },
+            "user": {
+              "data": {
+                "id": "2998260",
+                "type": "users"
+              }
+            },
+            "premiumListing": {
+              "data": null
+            },
+            "subCategories": {
+              "data": [
+                {
+                  "id": "2324",
+                  "type": "subCategories"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "5181079",
+          "type": "jobs",
+          "attributes": {
+            "status": "approved",
+            "budget": null,
+            "createdAt": "2025-11-01T18:53:51+11:00",
+            "description": "Looking for a reliable cleaner to clean a 2-bedroom house with 1 lounge, 1 kitchen, and 1 bathroom. Tasks include vacuuming, mopping, dusting, wiping surfaces, and cleaning the bathroom and kitchen areas. Prefer someone with attention to detail and their own natural cleaning supplies. \n\n\nSpecific Job Details: \n\n\nSchedule: I’m flexible\n\n\nBudget: Not Specified\n\nSite Visit: Anytime",
+            "name": "House Cleaning Job | Boronia",
+            "auditedAt": "2025-11-01T18:54:09+11:00",
+            "userName": "Hong Nguyen",
+            "distanceAway": "11kms",
+            "attachmentCount": 0,
+            "new": false,
+            "quoteAction": "{\"auto\":false,\"contactButtonText\":\"Contact Customer\"}",
+            "exclusiveJob": false,
+            "limitedCompetition": false,
+            "budgetInfo": "No Set Budget",
+            "startingLabel": "Flexible",
+            "nonSpecificDescription": "Looking for a reliable cleaner to clean a 2-bedroom house with 1 lounge, 1 kitchen, and 1 bathroom. Tasks include vacuuming, mopping, dusting, wiping surfaces, and cleaning the bathroom and kitchen areas. Prefer someone with attention to detail and their own natural cleaning supplies. \n\n\n",
+            "siteVisitSchedule": "Anytime",
+            "title": "Hong's House Cleaning job",
+            "unquotableMessage": []
+          },
+          "relationships": {
+            "suburb": {
+              "data": {
+                "id": "1603",
+                "type": "suburbs"
+              }
+            },
+            "user": {
+              "data": {
+                "id": "2187428",
+                "type": "users"
+              }
+            },
+            "premiumListing": {
+              "data": null
+            },
+            "subCategories": {
+              "data": [
+                {
+                  "id": "209",
+                  "type": "subCategories"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "5181036",
+          "type": "jobs",
+          "attributes": {
+            "status": "approved",
+            "budget": null,
+            "createdAt": "2025-11-01T17:17:26+11:00",
+            "description": "Gutter cleaning, some area plant grew in, overall not too bad\n\n\nSpecific Job Details: \n\n\nSchedule: I’m flexible\n\n\nBudget: Not Specified",
+            "name": "Outdoor Cleaning Job | Lysterfield",
+            "auditedAt": "2025-11-01T17:18:18+11:00",
+            "userName": "Clifford",
+            "distanceAway": "11kms",
+            "attachmentCount": 0,
+            "new": false,
+            "quoteAction": "{\"auto\":false,\"contactButtonText\":\"Contact Customer\"}",
+            "exclusiveJob": false,
+            "limitedCompetition": false,
+            "budgetInfo": "No Set Budget",
+            "startingLabel": "Flexible",
+            "nonSpecificDescription": "Gutter cleaning, some area plant grew in, overall not too bad\n\n\n",
+            "siteVisitSchedule": null,
+            "title": "Clifford's Outdoor Cleaning job",
+            "unquotableMessage": []
+          },
+          "relationships": {
+            "suburb": {
+              "data": {
+                "id": "8217",
+                "type": "suburbs"
+              }
+            },
+            "user": {
+              "data": {
+                "id": "2998177",
+                "type": "users"
+              }
+            },
+            "premiumListing": {
+              "data": null
+            },
+            "subCategories": {
+              "data": [
+                {
+                  "id": "202",
+                  "type": "subCategories"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "5181008",
+          "type": "jobs",
+          "attributes": {
+            "status": "approved",
+            "budget": null,
+            "createdAt": "2025-11-01T16:21:39+11:00",
+            "description": "Need help building a fully insulated room on side of house, size is 3x4m approx. \n\n\nSpecific Job Details: \n\n\nSchedule: Need job done in the next few weeks\n\n\nBudget: Not Specified\n\nSite Visit: Anytime",
+            "name": "Frames & Truss Job | Mount Waverley",
+            "auditedAt": "2025-11-01T16:22:03+11:00",
+            "userName": "One Kilo",
+            "distanceAway": "3kms",
+            "attachmentCount": 0,
+            "new": true,
+            "quoteAction": "{\"auto\":false,\"contactButtonText\":\"Contact Customer\"}",
+            "exclusiveJob": false,
+            "limitedCompetition": false,
+            "budgetInfo": "No Set Budget",
+            "startingLabel": "Next couple of weeks",
+            "nonSpecificDescription": "Need help building a fully insulated room on side of house, size is 3x4m approx. \n\n\n",
+            "siteVisitSchedule": "Anytime",
+            "title": "One's Frames & Trusses job",
+            "unquotableMessage": []
+          },
+          "relationships": {
+            "suburb": {
+              "data": {
+                "id": "9653",
+                "type": "suburbs"
+              }
+            },
+            "user": {
+              "data": {
+                "id": "2937835",
+                "type": "users"
+              }
+            },
+            "premiumListing": {
+              "data": null
+            },
+            "subCategories": {
+              "data": [
+                {
+                  "id": "503",
+                  "type": "subCategories"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "5180927",
+          "type": "jobs",
+          "attributes": {
+            "status": "approved",
+            "budget": null,
+            "createdAt": "2025-11-01T14:28:16+11:00",
+            "description": "Board needs to be replaced",
+            "name": "General Carpentry Job | Dandenong North",
+            "auditedAt": "2025-11-01T14:28:29+11:00",
+            "userName": "Mann",
+            "distanceAway": "10kms",
+            "attachmentCount": 0,
+            "new": true,
+            "quoteAction": "{\"auto\":false,\"contactButtonText\":\"Contact Customer\"}",
+            "exclusiveJob": false,
+            "limitedCompetition": false,
+            "budgetInfo": "No Set Budget",
+            "startingLabel": "ASAP urgent",
+            "nonSpecificDescription": "Board needs to be replaced",
+            "siteVisitSchedule": null,
+            "title": "Mann's General carpentry job",
+            "unquotableMessage": []
+          },
+          "relationships": {
+            "suburb": {
+              "data": {
+                "id": "3803",
+                "type": "suburbs"
+              }
+            },
+            "user": {
+              "data": {
+                "id": "1579073",
+                "type": "users"
+              }
+            },
+            "premiumListing": {
+              "data": null
+            },
+            "subCategories": {
+              "data": [
+                {
+                  "id": "2324",
+                  "type": "subCategories"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "5180918",
+          "type": "jobs",
+          "attributes": {
+            "status": "approved",
+            "budget": null,
+            "createdAt": "2025-11-01T14:20:40+11:00",
+            "description": "It’s a house with out furniture we need to do dusting and mop the floors",
+            "name": "House Cleaning Job | Mount Waverley",
+            "auditedAt": "2025-11-01T14:20:56+11:00",
+            "userName": "Nirosha",
+            "distanceAway": "3kms",
+            "attachmentCount": 0,
+            "new": false,
+            "quoteAction": "{\"auto\":false,\"contactButtonText\":\"Contact Customer\"}",
+            "exclusiveJob": false,
+            "limitedCompetition": false,
+            "budgetInfo": "No Set Budget",
+            "startingLabel": "ASAP urgent",
+            "nonSpecificDescription": "It’s a house with out furniture we need to do dusting and mop the floors ",
+            "siteVisitSchedule": null,
+            "title": "Nirosha's House Cleaning job",
+            "unquotableMessage": []
+          },
+          "relationships": {
+            "suburb": {
+              "data": {
+                "id": "9653",
+                "type": "suburbs"
+              }
+            },
+            "user": {
+              "data": {
+                "id": "2998111",
+                "type": "users"
+              }
+            },
+            "premiumListing": {
+              "data": null
+            },
+            "subCategories": {
+              "data": [
+                {
+                  "id": "209",
+                  "type": "subCategories"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "5180810",
+          "type": "jobs",
+          "attributes": {
+            "status": "approved",
+            "budget": 1,
+            "createdAt": "2025-11-01T12:04:51+11:00",
+            "description": "Installation of about 40 passage, privacy and dummy door handles/leavers, and 1 Entry set, throughout house.\n\n\nSpecific Job Details: \n\n\nSchedule: Need job done urgently\n\n\nBudget: $1 - $500\n\nSite Visit: No site visit required",
+            "name": "General Carpentry Job | Vermont South",
+            "auditedAt": "2025-11-01T12:05:07+11:00",
+            "userName": "Neomi",
+            "distanceAway": "3kms",
+            "attachmentCount": 4,
+            "new": false,
+            "quoteAction": "{\"auto\":false,\"contactButtonText\":\"Contact Customer\"}",
+            "exclusiveJob": false,
+            "limitedCompetition": false,
+            "budgetInfo": "$1 - $500",
+            "startingLabel": "ASAP urgent",
+            "nonSpecificDescription": "Installation of about 40 passage, privacy and dummy door handles/leavers, and 1 Entry set, throughout house.\n\n\n",
+            "siteVisitSchedule": "No site visit required",
+            "title": "Neomi's General carpentry job",
+            "unquotableMessage": []
+          },
+          "relationships": {
+            "suburb": {
+              "data": {
+                "id": "14184",
+                "type": "suburbs"
+              }
+            },
+            "user": {
+              "data": {
+                "id": "2998049",
+                "type": "users"
+              }
+            },
+            "premiumListing": {
+              "data": null
+            },
+            "subCategories": {
+              "data": [
+                {
+                  "id": "2324",
+                  "type": "subCategories"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "5180397",
+          "type": "jobs",
+          "attributes": {
+            "status": "approved",
+            "budget": null,
+            "createdAt": "2025-10-31T15:26:46+11:00",
+            "description": "I need a whole unit cleaning service, and carpet steam service too, my unit is fully carpeted except kitchen area and bathroom. you can come to my house for inspect before quoting the price is fine too.",
+            "name": "End Of Lease Bond Refund Clean Job | Malvern East",
+            "auditedAt": "2025-10-31T15:27:02+11:00",
+            "userName": "Kea",
+            "distanceAway": "9kms",
+            "attachmentCount": 0,
+            "new": false,
+            "quoteAction": "{\"auto\":false,\"contactButtonText\":\"Contact Customer\"}",
+            "exclusiveJob": false,
+            "limitedCompetition": false,
+            "budgetInfo": "No Set Budget",
+            "startingLabel": "On 10/11/25",
+            "nonSpecificDescription": "I need a whole unit cleaning service, and carpet steam service too, my unit is fully carpeted except kitchen area and bathroom. you can come to my house for inspect before quoting the price is fine too. ",
+            "siteVisitSchedule": null,
+            "title": "Kea's End of lease bond refund clean job",
+            "unquotableMessage": []
+          },
+          "relationships": {
+            "suburb": {
+              "data": {
+                "id": "8363",
+                "type": "suburbs"
+              }
+            },
+            "user": {
+              "data": {
+                "id": "2997816",
+                "type": "users"
+              }
+            },
+            "premiumListing": {
+              "data": null
+            },
+            "subCategories": {
+              "data": [
+                {
+                  "id": "2347",
+                  "type": "subCategories"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "5180394",
+          "type": "jobs",
+          "attributes": {
+            "status": "approved",
+            "budget": null,
+            "createdAt": "2025-10-31T15:26:01+11:00",
+            "description": "Between the 6th and the week starting November 9th start date.\nWork to complete:\nFour doors hung - doors and handles are included\nSkirting and architraves to a 3-bedroom house\nRepairs to an existing deck\nBulking heads to the kitchen",
+            "name": "General Carpentry Job | South Melbourne",
+            "auditedAt": "2025-10-31T15:26:14+11:00",
+            "userName": "Deanne",
+            "distanceAway": "19kms",
+            "attachmentCount": 0,
+            "new": true,
+            "quoteAction": "{\"auto\":false,\"contactButtonText\":\"Contact Customer\"}",
+            "exclusiveJob": false,
+            "limitedCompetition": false,
+            "budgetInfo": "No Set Budget",
+            "startingLabel": "On 06/11/25",
+            "nonSpecificDescription": "Between the 6th and the week starting November 9th start date.\nWork to complete:\nFour doors hung - doors and handles are included\nSkirting and architraves to a 3-bedroom house\nRepairs to an existing deck\nBulking heads to the kitchen ",
+            "siteVisitSchedule": null,
+            "title": "Deanne's General carpentry job",
+            "unquotableMessage": []
+          },
+          "relationships": {
+            "suburb": {
+              "data": {
+                "id": "12596",
+                "type": "suburbs"
+              }
+            },
+            "user": {
+              "data": {
+                "id": "2997814",
+                "type": "users"
+              }
+            },
+            "premiumListing": {
+              "data": null
+            },
+            "subCategories": {
+              "data": [
+                {
+                  "id": "2324",
+                  "type": "subCategories"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "5180181",
+          "type": "jobs",
+          "attributes": {
+            "status": "approved",
+            "budget": null,
+            "createdAt": "2025-10-31T11:29:18+11:00",
+            "description": "I need cleaning service ASAP for one stuido with bathroom. (there are dust on the kitchen and behind the fridge. thanks",
+            "name": "House Cleaning Job | Melbourne",
+            "auditedAt": "2025-10-31T11:29:39+11:00",
+            "userName": "K",
+            "distanceAway": "19kms",
+            "attachmentCount": 0,
+            "new": false,
+            "quoteAction": "{\"auto\":false,\"contactButtonText\":\"Contact Customer\"}",
+            "exclusiveJob": false,
+            "limitedCompetition": false,
+            "budgetInfo": "No Set Budget",
+            "startingLabel": "ASAP urgent",
+            "nonSpecificDescription": "I need cleaning service ASAP for one stuido with bathroom. (there are dust on the kitchen and behind the fridge. thanks",
+            "siteVisitSchedule": null,
+            "title": "K's House Cleaning job",
+            "unquotableMessage": []
+          },
+          "relationships": {
+            "suburb": {
+              "data": {
+                "id": "8693",
+                "type": "suburbs"
+              }
+            },
+            "user": {
+              "data": {
+                "id": "2997715",
+                "type": "users"
+              }
+            },
+            "premiumListing": {
+              "data": null
+            },
+            "subCategories": {
+              "data": [
+                {
+                  "id": "209",
+                  "type": "subCategories"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "included": [
+        {
+          "id": "403",
+          "type": "suburbs",
+          "attributes": {
+            "name": "Aspendale",
+            "state": "VIC",
+            "postcode": 3195,
+            "region": "Melbourne",
+            "area": "Bayside",
+            "lat": "-38.026479",
+            "lng": "145.101908"
+          }
+        },
+        {
+          "id": "2998260",
+          "type": "users",
+          "attributes": {
+            "email": "priank@live.com",
+            "name": "Priank",
+            "phone": "0482 032 833",
+            "phoneVerificationVerified": true
+          },
+          "relationships": {
+            "emailPreferences": {
+              "data": {
+                "id": 3012618,
+                "user_id": 2998260,
+                "ss_update": true,
+                "leads_per_day": true,
+                "lead_per_job": true,
+                "created_at": "2025-11-02T00:12:26+11:00",
+                "updated_at": "2025-11-02T00:12:26+11:00",
+                "job_related": true,
+                "all": true,
+                "free_lead_per_job": true,
+                "sms_lead_per_job": false,
+                "education": true,
+                "pro_plus_sms_lead_per_job": false,
+                "sms_offers": true,
+                "limited_competition_leads_sms": false,
+                "lead_per_exclusive_job": true,
+                "ss_booking": true,
+                "sms_booking": true,
+                "sms_chat_notification_business": true
+              }
+            }
+          }
+        },
+        {
+          "id": "2324",
+          "type": "subCategories",
+          "attributes": {
+            "name": "General carpentry"
+          }
+        },
+        {
+          "id": "1603",
+          "type": "suburbs",
+          "attributes": {
+            "name": "Boronia",
+            "state": "VIC",
+            "postcode": 3155,
+            "region": "Melbourne",
+            "area": "East",
+            "lat": "-37.862721",
+            "lng": "145.287034"
+          }
+        },
+        {
+          "id": "2187428",
+          "type": "users",
+          "attributes": {
+            "email": "hong.nd18@gmail.com",
+            "name": "Hong Nguyen",
+            "phone": "0406 699 698",
+            "phoneVerificationVerified": true
+          },
+          "relationships": {
+            "emailPreferences": {
+              "data": {
+                "id": 2202263,
+                "user_id": 2187428,
+                "ss_update": true,
+                "leads_per_day": true,
+                "lead_per_job": true,
+                "created_at": "2020-12-19T17:51:49+11:00",
+                "updated_at": "2020-12-19T17:51:49+11:00",
+                "job_related": true,
+                "all": true,
+                "free_lead_per_job": true,
+                "sms_lead_per_job": false,
+                "education": true,
+                "pro_plus_sms_lead_per_job": false,
+                "sms_offers": true,
+                "limited_competition_leads_sms": false,
+                "lead_per_exclusive_job": true,
+                "ss_booking": true,
+                "sms_booking": true,
+                "sms_chat_notification_business": true
+              }
+            }
+          }
+        },
+        {
+          "id": "209",
+          "type": "subCategories",
+          "attributes": {
+            "name": "House Cleaning"
+          }
+        },
+        {
+          "id": "8217",
+          "type": "suburbs",
+          "attributes": {
+            "name": "Lysterfield",
+            "state": "VIC",
+            "postcode": 3156,
+            "region": "Melbourne",
+            "area": "East",
+            "lat": "-37.922602",
+            "lng": "145.282079"
+          }
+        },
+        {
+          "id": "2998177",
+          "type": "users",
+          "attributes": {
+            "email": "cliff.bosquet@yahoo.com.au",
+            "name": "Clifford",
+            "phone": "0408 307 610",
+            "phoneVerificationVerified": true
+          },
+          "relationships": {
+            "emailPreferences": {
+              "data": {
+                "id": 3012535,
+                "user_id": 2998177,
+                "ss_update": true,
+                "leads_per_day": true,
+                "lead_per_job": true,
+                "created_at": "2025-11-01T17:17:05+11:00",
+                "updated_at": "2025-11-01T17:17:05+11:00",
+                "job_related": true,
+                "all": true,
+                "free_lead_per_job": true,
+                "sms_lead_per_job": false,
+                "education": true,
+                "pro_plus_sms_lead_per_job": false,
+                "sms_offers": true,
+                "limited_competition_leads_sms": false,
+                "lead_per_exclusive_job": true,
+                "ss_booking": true,
+                "sms_booking": true,
+                "sms_chat_notification_business": true
+              }
+            }
+          }
+        },
+        {
+          "id": "202",
+          "type": "subCategories",
+          "attributes": {
+            "name": "Outdoor Cleaning"
+          }
+        },
+        {
+          "id": "9653",
+          "type": "suburbs",
+          "attributes": {
+            "name": "Mount Waverley",
+            "state": "VIC",
+            "postcode": 3149,
+            "region": "Melbourne",
+            "area": "East",
+            "lat": "-37.876095",
+            "lng": "145.129008"
+          }
+        },
+        {
+          "id": "2937835",
+          "type": "users",
+          "attributes": {
+            "email": "onekilow@gmail.com",
+            "name": "One Kilo",
+            "phone": "0430 088 168",
+            "phoneVerificationVerified": true
+          },
+          "relationships": {
+            "emailPreferences": {
+              "data": {
+                "id": 2952226,
+                "user_id": 2937835,
+                "ss_update": true,
+                "leads_per_day": true,
+                "lead_per_job": true,
+                "created_at": "2025-05-03T13:17:02+10:00",
+                "updated_at": "2025-05-03T13:17:02+10:00",
+                "job_related": true,
+                "all": true,
+                "free_lead_per_job": true,
+                "sms_lead_per_job": false,
+                "education": true,
+                "pro_plus_sms_lead_per_job": false,
+                "sms_offers": true,
+                "limited_competition_leads_sms": false,
+                "lead_per_exclusive_job": true,
+                "ss_booking": true,
+                "sms_booking": true,
+                "sms_chat_notification_business": true
+              }
+            }
+          }
+        },
+        {
+          "id": "503",
+          "type": "subCategories",
+          "attributes": {
+            "name": "Frames & Trusses"
+          }
+        },
+        {
+          "id": "3803",
+          "type": "suburbs",
+          "attributes": {
+            "name": "Dandenong North",
+            "state": "VIC",
+            "postcode": 3175,
+            "region": "Melbourne",
+            "area": "South East",
+            "lat": "-37.965724",
+            "lng": "145.205645"
+          }
+        },
+        {
+          "id": "1579073",
+          "type": "users",
+          "attributes": {
+            "email": "doc_mann12@yahoo.com",
+            "name": "Mann",
+            "phone": "0458 718 990",
+            "phoneVerificationVerified": true
+          },
+          "relationships": {
+            "emailPreferences": {
+              "data": {
+                "id": 1587224,
+                "user_id": 1579073,
+                "ss_update": true,
+                "leads_per_day": true,
+                "lead_per_job": true,
+                "created_at": "2017-10-16T13:25:56+11:00",
+                "updated_at": "2017-10-16T13:25:56+11:00",
+                "job_related": true,
+                "all": true,
+                "free_lead_per_job": true,
+                "sms_lead_per_job": false,
+                "education": true,
+                "pro_plus_sms_lead_per_job": false,
+                "sms_offers": true,
+                "limited_competition_leads_sms": false,
+                "lead_per_exclusive_job": true,
+                "ss_booking": true,
+                "sms_booking": true,
+                "sms_chat_notification_business": true
+              }
+            }
+          }
+        },
+        {
+          "id": "2998111",
+          "type": "users",
+          "attributes": {
+            "email": "niro.nanda@gmail.com",
+            "name": "Nirosha",
+            "phone": "0415 244 352",
+            "phoneVerificationVerified": false
+          },
+          "relationships": {
+            "emailPreferences": {
+              "data": {
+                "id": 3012469,
+                "user_id": 2998111,
+                "ss_update": true,
+                "leads_per_day": true,
+                "lead_per_job": true,
+                "created_at": "2025-11-01T14:20:37+11:00",
+                "updated_at": "2025-11-01T14:20:37+11:00",
+                "job_related": true,
+                "all": true,
+                "free_lead_per_job": true,
+                "sms_lead_per_job": false,
+                "education": true,
+                "pro_plus_sms_lead_per_job": false,
+                "sms_offers": true,
+                "limited_competition_leads_sms": false,
+                "lead_per_exclusive_job": true,
+                "ss_booking": true,
+                "sms_booking": true,
+                "sms_chat_notification_business": true
+              }
+            }
+          }
+        },
+        {
+          "id": "14184",
+          "type": "suburbs",
+          "attributes": {
+            "name": "Vermont South",
+            "state": "VIC",
+            "postcode": 3133,
+            "region": "Melbourne",
+            "area": "East",
+            "lat": "-37.856647",
+            "lng": "145.183576"
+          }
+        },
+        {
+          "id": "2998049",
+          "type": "users",
+          "attributes": {
+            "email": "neomi.thottan@gmail.com",
+            "name": "Neomi",
+            "phone": "0413 909 600",
+            "phoneVerificationVerified": true
+          },
+          "relationships": {
+            "emailPreferences": {
+              "data": {
+                "id": 3012407,
+                "user_id": 2998049,
+                "ss_update": true,
+                "leads_per_day": true,
+                "lead_per_job": true,
+                "created_at": "2025-11-01T12:00:20+11:00",
+                "updated_at": "2025-11-01T12:00:20+11:00",
+                "job_related": true,
+                "all": true,
+                "free_lead_per_job": true,
+                "sms_lead_per_job": false,
+                "education": true,
+                "pro_plus_sms_lead_per_job": false,
+                "sms_offers": true,
+                "limited_competition_leads_sms": false,
+                "lead_per_exclusive_job": true,
+                "ss_booking": true,
+                "sms_booking": true,
+                "sms_chat_notification_business": true
+              }
+            }
+          }
+        },
+        {
+          "id": "8363",
+          "type": "suburbs",
+          "attributes": {
+            "name": "Malvern East",
+            "state": "VIC",
+            "postcode": 3145,
+            "region": "Melbourne",
+            "area": "East",
+            "lat": "-37.87837",
+            "lng": "145.067892"
+          }
+        },
+        {
+          "id": "2997816",
+          "type": "users",
+          "attributes": {
+            "email": "thienando15@gmail.com",
+            "name": "Kea",
+            "phone": "0480 454 684",
+            "phoneVerificationVerified": false
+          },
+          "relationships": {
+            "emailPreferences": {
+              "data": {
+                "id": 3012174,
+                "user_id": 2997816,
+                "ss_update": true,
+                "leads_per_day": true,
+                "lead_per_job": true,
+                "created_at": "2025-10-31T15:26:43+11:00",
+                "updated_at": "2025-10-31T15:26:43+11:00",
+                "job_related": true,
+                "all": true,
+                "free_lead_per_job": true,
+                "sms_lead_per_job": false,
+                "education": true,
+                "pro_plus_sms_lead_per_job": false,
+                "sms_offers": true,
+                "limited_competition_leads_sms": false,
+                "lead_per_exclusive_job": true,
+                "ss_booking": true,
+                "sms_booking": true,
+                "sms_chat_notification_business": true
+              }
+            }
+          }
+        },
+        {
+          "id": "2347",
+          "type": "subCategories",
+          "attributes": {
+            "name": "End of lease bond refund clean"
+          }
+        },
+        {
+          "id": "12596",
+          "type": "suburbs",
+          "attributes": {
+            "name": "South Melbourne",
+            "state": "VIC",
+            "postcode": 3205,
+            "region": "Melbourne",
+            "area": "Inner City",
+            "lat": "-37.830236",
+            "lng": "144.959304"
+          }
+        },
+        {
+          "id": "2997814",
+          "type": "users",
+          "attributes": {
+            "email": "deannebogusz@gmail.com",
+            "name": "Deanne",
+            "phone": "0425 745 784",
+            "phoneVerificationVerified": false
+          },
+          "relationships": {
+            "emailPreferences": {
+              "data": {
+                "id": 3012172,
+                "user_id": 2997814,
+                "ss_update": true,
+                "leads_per_day": true,
+                "lead_per_job": true,
+                "created_at": "2025-10-31T15:25:58+11:00",
+                "updated_at": "2025-10-31T15:25:58+11:00",
+                "job_related": true,
+                "all": true,
+                "free_lead_per_job": true,
+                "sms_lead_per_job": false,
+                "education": true,
+                "pro_plus_sms_lead_per_job": false,
+                "sms_offers": true,
+                "limited_competition_leads_sms": false,
+                "lead_per_exclusive_job": true,
+                "ss_booking": true,
+                "sms_booking": true,
+                "sms_chat_notification_business": true
+              }
+            }
+          }
+        },
+        {
+          "id": "8693",
+          "type": "suburbs",
+          "attributes": {
+            "name": "Melbourne",
+            "state": "VIC",
+            "postcode": 3000,
+            "region": "Melbourne",
+            "area": "Inner City",
+            "lat": "-37.8133386",
+            "lng": "144.9708234"
+          }
+        },
+        {
+          "id": "2997715",
+          "type": "users",
+          "attributes": {
+            "email": "khalid.a4@outlook.com",
+            "name": "K",
+            "phone": "0452 683 454",
+            "phoneVerificationVerified": false
+          },
+          "relationships": {
+            "emailPreferences": {
+              "data": {
+                "id": 3012073,
+                "user_id": 2997715,
+                "ss_update": true,
+                "leads_per_day": true,
+                "lead_per_job": true,
+                "created_at": "2025-10-31T11:29:15+11:00",
+                "updated_at": "2025-10-31T11:29:15+11:00",
+                "job_related": true,
+                "all": true,
+                "free_lead_per_job": true,
+                "sms_lead_per_job": false,
+                "education": true,
+                "pro_plus_sms_lead_per_job": false,
+                "sms_offers": true,
+                "limited_competition_leads_sms": false,
+                "lead_per_exclusive_job": true,
+                "ss_booking": true,
+                "sms_booking": true,
+                "sms_chat_notification_business": true
+              }
+            }
+          }
+        }
+      ],
+      "links": {
+        "self": "https://www.serviceseeking.com.au/leads?include=sub_categories%2Csuburb%2Cuser&page%5Bnumber%5D=1&page%5Bsize%5D=10&pinned_lead_id=&sort=newest",
+        "first": "https://www.serviceseeking.com.au/leads?include=sub_categories%2Csuburb%2Cuser&page%5Bnumber%5D=1&page%5Bsize%5D=10&pinned_lead_id=&sort=newest",
+        "prev": null,
+        "next": "https://www.serviceseeking.com.au/leads?include=sub_categories%2Csuburb%2Cuser&page%5Bnumber%5D=2&page%5Bsize%5D=10&pinned_lead_id=&sort=newest",
+        "last": "https://www.serviceseeking.com.au/leads?include=sub_categories%2Csuburb%2Cuser&page%5Bnumber%5D=4&page%5Bsize%5D=10&pinned_lead_id=&sort=newest"
+      },
+      "meta": {
+        "hasNextPage": true,
+        "totalCount": 35,
+        "unreadCount": 27
+      }
+    }
+  },
+  {
+    "timestamp": "2025-11-01T23:08:16.713Z",
+    "type": "request",
+    "method": "POST",
+    "url": "https://bam.nr-data.net/jserrors/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=934675&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "https://www.serviceseeking.com.au/",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Chromium\";v=\"141\", \"Not?A_Brand\";v=\"8\"",
+      "content-type": "text/plain",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "resourceType": "xhr"
+  },
+  {
+    "timestamp": "2025-11-01T23:08:16.713Z",
+    "type": "request",
+    "method": "POST",
+    "url": "https://bam.nr-data.net/events/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=934677&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "https://www.serviceseeking.com.au/",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Chromium\";v=\"141\", \"Not?A_Brand\";v=\"8\"",
+      "content-type": "text/plain",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "resourceType": "xhr"
+  },
+  {
+    "timestamp": "2025-11-01T23:08:16.714Z",
+    "type": "request",
+    "method": "POST",
+    "url": "https://bam.nr-data.net/ins/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=934679&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "https://www.serviceseeking.com.au/",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Chromium\";v=\"141\", \"Not?A_Brand\";v=\"8\"",
+      "content-type": "text/plain",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "resourceType": "xhr"
+  },
+  {
+    "timestamp": "2025-11-01T23:08:16.971Z",
+    "type": "response",
+    "status": 200,
+    "url": "https://bam.nr-data.net/jserrors/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=934675&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "cf-cache-status": "DYNAMIC",
+      "x-envoy-upstream-service-time": "1",
+      "connection": "keep-alive",
+      "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "GET, POST, PUT, HEAD, OPTIONS",
+      "cf-ray": "997f0d974876d853-MEL",
+      "access-control-allow-origin": "https://www.serviceseeking.com.au",
+      "content-length": "24",
+      "date": "Sat, 01 Nov 2025 23:08:16 GMT",
+      "content-type": "image/gif",
+      "vary": "accept-encoding",
+      "server": "cloudflare",
+      "nr-rate-limited": "allowed"
+    }
+  },
+  {
+    "timestamp": "2025-11-01T23:08:17.009Z",
+    "type": "response",
+    "status": 204,
+    "url": "https://bam.nr-data.net/ins/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=934679&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "cf-cache-status": "DYNAMIC",
+      "x-envoy-upstream-service-time": "0",
+      "connection": "keep-alive",
+      "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "GET, POST, PUT, HEAD, OPTIONS",
+      "cf-ray": "997f0d978d0bc78d-MEL",
+      "access-control-allow-origin": "https://www.serviceseeking.com.au",
+      "date": "Sat, 01 Nov 2025 23:08:16 GMT",
+      "content-type": "application/json; charset=UTF-8",
+      "vary": "accept-encoding",
+      "server": "cloudflare",
+      "nr-rate-limited": "allowed"
+    }
+  },
+  {
+    "timestamp": "2025-11-01T23:08:17.013Z",
+    "type": "response",
+    "status": 200,
+    "url": "https://bam.nr-data.net/events/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=934677&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "cf-cache-status": "DYNAMIC",
+      "x-envoy-upstream-service-time": "0",
+      "connection": "keep-alive",
+      "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "GET, POST, PUT, HEAD, OPTIONS",
+      "cf-ray": "997f0d978bdf2f49-MEL",
+      "access-control-allow-origin": "https://www.serviceseeking.com.au",
+      "content-length": "24",
+      "date": "Sat, 01 Nov 2025 23:08:16 GMT",
+      "content-type": "image/gif",
+      "vary": "accept-encoding",
+      "server": "cloudflare",
+      "nr-rate-limited": "allowed"
+    }
+  },
+  {
+    "timestamp": "2025-11-01T23:08:46.727Z",
+    "type": "request",
+    "method": "POST",
+    "url": "https://bam.nr-data.net/jserrors/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=964688&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "sec-ch-ua-platform": "\"Windows\"",
+      "referer": "https://www.serviceseeking.com.au/",
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "sec-ch-ua": "\"Chromium\";v=\"141\", \"Not?A_Brand\";v=\"8\"",
+      "content-type": "text/plain",
+      "sec-ch-ua-mobile": "?0"
+    },
+    "resourceType": "xhr"
+  },
+  {
+    "timestamp": "2025-11-01T23:08:47.280Z",
+    "type": "response",
+    "status": 200,
+    "url": "https://bam.nr-data.net/jserrors/1/423b85bf1f?a=2281&v=1.302.0&to=e1xeEUMOWVtRRhcBEEtaXgBCElBEG0IKTAldUlQWHghbU1FM&rst=964688&ck=0&s=9ae1140689bbea88&ref=https://www.serviceseeking.com.au/v2/leads&ptid=e43c49c3d4c6e52c",
+    "headers": {
+      "cf-cache-status": "DYNAMIC",
+      "x-envoy-upstream-service-time": "0",
+      "connection": "keep-alive",
+      "access-control-allow-credentials": "true",
+      "access-control-allow-methods": "GET, POST, PUT, HEAD, OPTIONS",
+      "cf-ray": "997f0e52cbf72f49-MEL",
+      "access-control-allow-origin": "https://www.serviceseeking.com.au",
+      "content-length": "24",
+      "date": "Sat, 01 Nov 2025 23:08:46 GMT",
+      "content-type": "image/gif",
+      "vary": "accept-encoding",
+      "server": "cloudflare",
+      "nr-rate-limited": "allowed"
+    }
   }
 ]

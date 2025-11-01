@@ -236,7 +236,6 @@ async function sendLeadToBackend(lead, tradiePhone) {
     // Show notification
     chrome.notifications.create({
       type: 'basic',
-      iconUrl: 'icons/icon48.png',
       title: 'LeadBridge AU',
       message: `New lead detected: ${lead.jobType} in ${lead.location}. Calling tradie...`
     });

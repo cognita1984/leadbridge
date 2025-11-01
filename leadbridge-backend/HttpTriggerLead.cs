@@ -3,6 +3,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
+using System.Web;
 using LeadBridge.Models;
 using LeadBridge.Services;
 using LeadBridge.Storage;
@@ -10,21 +11,22 @@ using LeadBridge.Storage;
 namespace LeadBridge;
 
 /// <summary>
-/// HTTP-triggered Azure Function to receive leads from Chrome extension
+/// HTTP-triggered Azure Function to receive leads from Chrome extension and handle Twilio webhooks
 /// </summary>
 public class HttpTriggerLead
 {
     private readonly ILogger<HttpTriggerLead> _logger;
-    private readonly IAcsService _acsService;
+    private readonly ITwilioService _twilioService;
     private readonly ITableClientFactory _tableFactory;
+    private const string HARDCODED_CUSTOMER_PHONE = "+61432584824"; // For testing
 
     public HttpTriggerLead(
         ILogger<HttpTriggerLead> logger,
-        IAcsService acsService,
+        ITwilioService twilioService,
         ITableClientFactory tableFactory)
     {
         _logger = logger;
-        _acsService = acsService;
+        _twilioService = twilioService;
         _tableFactory = tableFactory;
     }
 
@@ -58,19 +60,18 @@ public class HttpTriggerLead
 
             // Validate required fields
             if (string.IsNullOrWhiteSpace(lead.LeadId) ||
-                string.IsNullOrWhiteSpace(lead.TradiePhone) ||
-                string.IsNullOrWhiteSpace(lead.CustomerPhone))
+                string.IsNullOrWhiteSpace(lead.TradiePhone))
             {
                 _logger.LogWarning("Missing required fields");
                 return await CreateResponseAsync(req, HttpStatusCode.BadRequest, new LeadResponse
                 {
                     Success = false,
-                    Message = "Missing required fields: leadId, tradiePhone, customerPhone"
+                    Message = "Missing required fields: leadId, tradiePhone"
                 });
             }
 
-            _logger.LogInformation("Processing lead: {LeadId} for tradie {TradiePhone}",
-                lead.LeadId, lead.TradiePhone);
+            _logger.LogInformation("Processing lead: {LeadId} - Customer: {CustomerName}, Job: {JobType}, Location: {Location}",
+                lead.LeadId, lead.CustomerName, lead.JobType, lead.Location);
 
             // Store lead in Table Storage
             var leadStorage = new LeadStorageService(_tableFactory, new LoggerFactory().CreateLogger<LeadStorageService>());
@@ -78,7 +79,7 @@ public class HttpTriggerLead
             {
                 LeadId = lead.LeadId,
                 CustomerName = lead.CustomerName,
-                CustomerPhone = lead.CustomerPhone,
+                CustomerPhone = HARDCODED_CUSTOMER_PHONE, // Hardcoded for testing
                 TradiePhone = lead.TradiePhone,
                 JobType = lead.JobType,
                 Location = lead.Location,
@@ -88,24 +89,25 @@ public class HttpTriggerLead
 
             await leadStorage.SaveLeadAsync(leadEntity);
 
-            // Initiate call to tradie
-            string callId;
+            // Initiate call to tradie using Twilio
+            string callSid;
             try
             {
-                callId = await _acsService.InitiateCallToTradieAsync(
+                callSid = await _twilioService.InitiateCallToTradieAsync(
                     lead.TradiePhone,
                     lead.LeadId,
+                    lead.CustomerName,
                     lead.JobType,
                     lead.Location);
 
                 // Update lead status
-                await leadStorage.UpdateLeadStatusAsync(lead.LeadId, DateTime.UtcNow, "Calling", callId);
+                await leadStorage.UpdateLeadStatusAsync(lead.LeadId, DateTime.UtcNow, "Calling", callSid);
 
-                _logger.LogInformation("Call initiated successfully: {CallId}", callId);
+                _logger.LogInformation("Twilio call initiated successfully. CallSid: {CallSid}", callSid);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initiate call for lead: {LeadId}", lead.LeadId);
+                _logger.LogError(ex, "Failed to initiate Twilio call for lead: {LeadId}", lead.LeadId);
 
                 // Update lead status to failed
                 await leadStorage.UpdateLeadStatusAsync(lead.LeadId, DateTime.UtcNow, "Failed");
@@ -123,8 +125,8 @@ public class HttpTriggerLead
             var callEvent = new CallEventEntity
             {
                 LeadId = lead.LeadId,
-                CallId = callId,
-                CustomerPhone = lead.CustomerPhone,
+                CallId = callSid,
+                CustomerPhone = HARDCODED_CUSTOMER_PHONE,
                 TradiePhone = lead.TradiePhone,
                 JobType = lead.JobType,
                 Location = lead.Location,
@@ -138,9 +140,9 @@ public class HttpTriggerLead
             return await CreateResponseAsync(req, HttpStatusCode.OK, new LeadResponse
             {
                 Success = true,
-                Message = "Lead received and call initiated",
+                Message = "Lead received and call initiated via Twilio",
                 LeadId = lead.LeadId,
-                CallId = callId
+                CallId = callSid
             });
         }
         catch (Exception ex)
@@ -155,37 +157,176 @@ public class HttpTriggerLead
     }
 
     /// <summary>
-    /// POST /api/callback - Receives callbacks from Azure Communication Services
+    /// POST /api/twilio/tradie-greeting - TwiML response for tradie call
     /// </summary>
-    [Function("AcsCallback")]
-    public async Task<HttpResponseData> AcsCallback(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "callback")] HttpRequestData req)
+    [Function("TwilioTradieGreeting")]
+    public async Task<HttpResponseData> TwilioTradieGreeting(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "get", Route = "twilio/tradie-greeting")] HttpRequestData req)
     {
-        _logger.LogInformation("ACS callback endpoint invoked");
+        _logger.LogInformation("TwilioTradieGreeting endpoint invoked");
 
         try
         {
-            // Read the request body
-            var requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            var query = HttpUtility.ParseQueryString(req.Url.Query);
+            var leadId = query["leadId"] ?? "unknown";
+            var customerName = query["customerName"] ?? "Unknown Customer";
+            var jobType = query["jobType"] ?? "General Service";
+            var location = query["location"] ?? "Unknown Location";
 
-            // Parse CloudEvent(s)
-            var cloudEvents = CloudEventParser.ParseMany(requestBody);
+            _logger.LogInformation("Generating TwiML for lead: {LeadId}", leadId);
 
-            foreach (var cloudEvent in cloudEvents)
-            {
-                _logger.LogInformation("Processing CloudEvent: {EventType}", cloudEvent.Type);
+            var twiml = _twilioService.GenerateTradieCallTwiML(leadId, customerName, jobType, location);
 
-                // Handle the event
-                await _acsService.HandleCallbackEventAsync(cloudEvent);
-            }
-
-            // Return 200 OK
             var response = req.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "text/xml");
+            await response.WriteStringAsync(twiml);
+
             return response;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing ACS callback");
+            _logger.LogError(ex, "Error generating tradie greeting TwiML");
+            var response = req.CreateResponse(HttpStatusCode.InternalServerError);
+            await response.WriteStringAsync($"Error: {ex.Message}");
+            return response;
+        }
+    }
+
+    /// <summary>
+    /// POST /api/twilio/tradie-response - Handles keypress from tradie (1 = call customer, 2 = skip)
+    /// </summary>
+    [Function("TwilioTradieResponse")]
+    public async Task<HttpResponseData> TwilioTradieResponse(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "twilio/tradie-response")] HttpRequestData req)
+    {
+        _logger.LogInformation("TwilioTradieResponse endpoint invoked");
+
+        try
+        {
+            var query = HttpUtility.ParseQueryString(req.Url.Query);
+            var leadId = query["leadId"] ?? "unknown";
+
+            // Read form data
+            var formData = await req.ReadFormAsync();
+            var digits = formData["Digits"]?.ToString();
+
+            _logger.LogInformation("Tradie pressed: {Digits} for lead: {LeadId}", digits, leadId);
+
+            string twiml;
+
+            if (digits == "1")
+            {
+                // Call customer
+                _logger.LogInformation("Tradie chose to call customer for lead: {LeadId}", leadId);
+                twiml = _twilioService.GenerateCustomerBridgeTwiML(HARDCODED_CUSTOMER_PHONE);
+
+                // Update lead status
+                var leadStorage = new LeadStorageService(_tableFactory, new LoggerFactory().CreateLogger<LeadStorageService>());
+                await leadStorage.UpdateLeadStatusAsync(leadId, DateTime.UtcNow, "Calling Customer");
+            }
+            else if (digits == "2")
+            {
+                // Skip lead
+                _logger.LogInformation("Tradie chose to skip lead: {LeadId}", leadId);
+                twiml = ((TwilioService)_twilioService).GenerateSkipLeadTwiML();
+
+                // Update lead status
+                var leadStorage = new LeadStorageService(_tableFactory, new LoggerFactory().CreateLogger<LeadStorageService>());
+                await leadStorage.UpdateLeadStatusAsync(leadId, DateTime.UtcNow, "Skipped");
+            }
+            else
+            {
+                // Invalid input
+                _logger.LogWarning("Invalid keypress: {Digits} for lead: {LeadId}", digits, leadId);
+                twiml = ((TwilioService)_twilioService).GenerateInvalidInputTwiML();
+            }
+
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            response.Headers.Add("Content-Type", "text/xml");
+            await response.WriteStringAsync(twiml);
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling tradie response");
+            var response = req.CreateResponse(HttpStatusCode.InternalServerError);
+            await response.WriteStringAsync($"Error: {ex.Message}");
+            return response;
+        }
+    }
+
+    /// <summary>
+    /// POST /api/twilio/call-complete - Called when customer call ends
+    /// </summary>
+    [Function("TwilioCallComplete")]
+    public async Task<HttpResponseData> TwilioCallComplete(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "twilio/call-complete")] HttpRequestData req)
+    {
+        _logger.LogInformation("TwilioCallComplete endpoint invoked");
+
+        try
+        {
+            var formData = await req.ReadFormAsync();
+            var callSid = formData["CallSid"]?.ToString();
+            var callDuration = formData["CallDuration"]?.ToString();
+            var callStatus = formData["CallStatus"]?.ToString();
+
+            _logger.LogInformation("Call completed. CallSid: {CallSid}, Duration: {Duration}s, Status: {Status}",
+                callSid, callDuration, callStatus);
+
+            // Update call event in storage
+            var callEventStorage = new CallEventStorageService(_tableFactory, new LoggerFactory().CreateLogger<CallEventStorageService>());
+            if (!string.IsNullOrEmpty(callSid) && int.TryParse(callDuration, out var duration))
+            {
+                await callEventStorage.UpdateCallDurationAsync(callSid, duration, callStatus ?? "completed");
+            }
+
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            await response.WriteStringAsync("OK");
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling call complete");
+            var response = req.CreateResponse(HttpStatusCode.InternalServerError);
+            await response.WriteStringAsync($"Error: {ex.Message}");
+            return response;
+        }
+    }
+
+    /// <summary>
+    /// POST /api/twilio/status - Receives status callbacks from Twilio
+    /// </summary>
+    [Function("TwilioStatus")]
+    public async Task<HttpResponseData> TwilioStatus(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "twilio/status")] HttpRequestData req)
+    {
+        _logger.LogInformation("TwilioStatus endpoint invoked");
+
+        try
+        {
+            var formData = await req.ReadFormAsync();
+            var callSid = formData["CallSid"]?.ToString();
+            var callStatus = formData["CallStatus"]?.ToString();
+
+            _logger.LogInformation("Twilio status update. CallSid: {CallSid}, Status: {Status}",
+                callSid, callStatus);
+
+            // Log status change
+            var callEventStorage = new CallEventStorageService(_tableFactory, new LoggerFactory().CreateLogger<CallEventStorageService>());
+            if (!string.IsNullOrEmpty(callSid) && !string.IsNullOrEmpty(callStatus))
+            {
+                await callEventStorage.UpdateCallStatusAsync(callSid, callStatus);
+            }
+
+            var response = req.CreateResponse(HttpStatusCode.OK);
+            await response.WriteStringAsync("OK");
+            return response;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error handling Twilio status");
             var response = req.CreateResponse(HttpStatusCode.InternalServerError);
             await response.WriteStringAsync($"Error: {ex.Message}");
             return response;
@@ -206,7 +347,8 @@ public class HttpTriggerLead
         {
             status = "healthy",
             timestamp = DateTime.UtcNow,
-            version = "1.0.0"
+            version = "2.0.0-twilio",
+            provider = "Twilio"
         });
 
         return response;
@@ -226,54 +368,5 @@ public class HttpTriggerLead
 
         await response.WriteAsJsonAsync(responseBody);
         return response;
-    }
-}
-
-/// <summary>
-/// Simple CloudEvent parser (minimal implementation)
-/// In production, use Azure.Messaging.CloudEvent package
-/// </summary>
-public static class CloudEventParser
-{
-    public static IEnumerable<Azure.Messaging.CloudEvent> ParseMany(string json)
-    {
-        var events = new List<Azure.Messaging.CloudEvent>();
-
-        try
-        {
-            // Try to parse as array
-            if (json.TrimStart().StartsWith("["))
-            {
-                var jsonArray = JsonSerializer.Deserialize<JsonElement[]>(json);
-                if (jsonArray != null)
-                {
-                    foreach (var element in jsonArray)
-                    {
-                        events.Add(ParseCloudEvent(element));
-                    }
-                }
-            }
-            else
-            {
-                // Parse as single event
-                var jsonElement = JsonSerializer.Deserialize<JsonElement>(json);
-                events.Add(ParseCloudEvent(jsonElement));
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("Failed to parse CloudEvent", ex);
-        }
-
-        return events;
-    }
-
-    private static Azure.Messaging.CloudEvent ParseCloudEvent(JsonElement element)
-    {
-        var eventType = element.GetProperty("type").GetString() ?? "unknown";
-        var source = element.GetProperty("source").GetString() ?? "unknown";
-        var data = element.GetProperty("data");
-
-        return new Azure.Messaging.CloudEvent(source, eventType, data);
     }
 }

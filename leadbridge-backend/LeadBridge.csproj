@@ -15,8 +15,10 @@
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.2.0" />
     <PackageReference Include="Azure.Data.Tables" Version="12.8.3" />
-    <PackageReference Include="Azure.Communication.CallAutomation" Version="1.2.0" />
+    <PackageReference Include="Twilio" Version="7.0.0" />
+    <PackageReference Include="Twilio.AspNet.Core" Version="8.0.2" />
     <PackageReference Include="Azure.Identity" Version="1.11.4" />
+    <PackageReference Include="System.Web.HttpUtility" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

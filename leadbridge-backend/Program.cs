@@ -1,8 +1,6 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Azure.Data.Tables;
-using Azure.Communication.CallAutomation;
 using LeadBridge.Services;
 using LeadBridge.Storage;
 
@@ -16,16 +14,22 @@ var host = new HostBuilder()
         // Azure Table Storage
         services.AddSingleton<ITableClientFactory, TableClientFactory>();
 
-        // Azure Communication Services
-        services.AddSingleton<IAcsService>(provider =>
+        // Twilio Service
+        services.AddSingleton<ITwilioService>(provider =>
         {
-            var connectionString = Environment.GetEnvironmentVariable("ACS_CONNECTION_STRING")
-                ?? throw new InvalidOperationException("ACS_CONNECTION_STRING not configured");
+            var accountSid = Environment.GetEnvironmentVariable("TWILIO_ACCOUNT_SID")
+                ?? throw new InvalidOperationException("TWILIO_ACCOUNT_SID not configured");
 
-            var callbackUri = Environment.GetEnvironmentVariable("ACS_CALLBACK_URI")
-                ?? throw new InvalidOperationException("ACS_CALLBACK_URI not configured");
+            var authToken = Environment.GetEnvironmentVariable("TWILIO_AUTH_TOKEN")
+                ?? throw new InvalidOperationException("TWILIO_AUTH_TOKEN not configured");
 
-            return new AcsService(connectionString, callbackUri);
+            var twilioPhone = Environment.GetEnvironmentVariable("TWILIO_PHONE_NUMBER")
+                ?? throw new InvalidOperationException("TWILIO_PHONE_NUMBER not configured");
+
+            var callbackBaseUrl = Environment.GetEnvironmentVariable("TWILIO_CALLBACK_BASE_URL")
+                ?? throw new InvalidOperationException("TWILIO_CALLBACK_BASE_URL not configured");
+
+            return new TwilioService(accountSid, authToken, twilioPhone, callbackBaseUrl);
         });
 
         // Logging

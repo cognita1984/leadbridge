@@ -198,4 +198,63 @@ public class CallEventStorageService
             return false;
         }
     }
+
+    public async Task<bool> UpdateCallStatusAsync(string callId, string status)
+    {
+        try
+        {
+            // Try to find the call event in recent partitions (last 7 days)
+            for (int daysBack = 0; daysBack < 7; daysBack++)
+            {
+                var date = DateTime.UtcNow.AddDays(-daysBack);
+                var callEvent = await GetCallEventAsync(callId, date);
+
+                if (callEvent != null)
+                {
+                    callEvent.Status = status;
+                    await _tableClient.UpsertEntityAsync(callEvent);
+                    _logger.LogInformation("Call status updated: {CallId} -> {Status}", callId, status);
+                    return true;
+                }
+            }
+
+            _logger.LogWarning("Call event not found for status update: {CallId}", callId);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update call status: {CallId}", callId);
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateCallDurationAsync(string callId, int durationSeconds, string status)
+    {
+        try
+        {
+            // Try to find the call event in recent partitions (last 7 days)
+            for (int daysBack = 0; daysBack < 7; daysBack++)
+            {
+                var date = DateTime.UtcNow.AddDays(-daysBack);
+                var callEvent = await GetCallEventAsync(callId, date);
+
+                if (callEvent != null)
+                {
+                    callEvent.DurationSeconds = durationSeconds;
+                    callEvent.Status = status;
+                    await _tableClient.UpsertEntityAsync(callEvent);
+                    _logger.LogInformation("Call duration updated: {CallId} - {Duration}s", callId, durationSeconds);
+                    return true;
+                }
+            }
+
+            _logger.LogWarning("Call event not found for duration update: {CallId}", callId);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update call duration: {CallId}", callId);
+            return false;
+        }
+    }
 }

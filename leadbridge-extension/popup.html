@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LeadBridge AU</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 320px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+    }
+
+    .status-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ff4444;
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.active {
+      background: #00ff88;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    input[type="tel"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+    }
+
+    input[type="tel"]:focus {
+      outline: 2px solid #00ff88;
+    }
+
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 26px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.3);
+      transition: 0.3s;
+      border-radius: 26px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #00ff88;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+    }
+
+    .btn-primary {
+      background: #00ff88;
+      color: #333;
+    }
+
+    .btn-primary:hover {
+      background: #00dd77;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .message {
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .message.success {
+      background: rgba(0, 255, 136, 0.2);
+      border: 1px solid rgba(0, 255, 136, 0.5);
+    }
+
+    .message.error {
+      background: rgba(255, 68, 68, 0.2);
+      border: 1px solid rgba(255, 68, 68, 0.5);
+    }
+
+    .message.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧱 LeadBridge AU</h1>
+
+    <div class="status">
+      <span class="status-label">Monitoring</span>
+      <div class="status-indicator">
+        <span id="statusText">Disabled</span>
+        <div class="status-dot" id="statusDot"></div>
+      </div>
+    </div>
+
+    <div id="message" class="message hidden"></div>
+
+    <div class="form-group">
+      <label for="tradiePhone">Your Phone Number (Tradie)</label>
+      <input
+        type="tel"
+        id="tradiePhone"
+        placeholder="+61 4XX XXX XXX"
+        pattern="^\+?61[0-9\s]{9,12}$"
+      />
+    </div>
+
+    <div class="toggle-container">
+      <label>Enable Monitoring</label>
+      <label class="switch">
+        <input type="checkbox" id="toggleMonitoring">
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <button class="btn btn-primary" id="saveBtn">Save Settings</button>
+    <button class="btn btn-secondary" id="testBtn">Test Connection</button>
+
+    <div class="stats">
+      <div class="stat-box">
+        <span class="stat-value" id="leadCount">0</span>
+        <span class="stat-label">Leads Seen</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-value" id="callCount">-</span>
+        <span class="stat-label">Calls Made</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

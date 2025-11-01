@@ -1,0 +1,125 @@
+name: Deploy LeadBridge to Azure
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AZURE_RESOURCE_GROUP: leadbridge
+  AZURE_LOCATION: australiaeast
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  deploy-infrastructure:
+    name: Deploy Azure Infrastructure
+    runs-on: ubuntu-latest
+    outputs:
+      functionAppName: ${{ steps.deploy.outputs.functionAppName }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Create Resource Group
+        run: |
+          az group create \
+            --name ${{ env.AZURE_RESOURCE_GROUP }} \
+            --location ${{ env.AZURE_LOCATION }}
+
+      - name: Deploy Bicep Template
+        id: deploy
+        uses: azure/arm-deploy@v1
+        with:
+          resourceGroupName: ${{ env.AZURE_RESOURCE_GROUP }}
+          template: ./infra/main.bicep
+          parameters: environmentName=prod
+          failOnStdErr: false
+
+      - name: Display Outputs
+        run: |
+          echo "Function App Name: ${{ steps.deploy.outputs.functionAppName }}"
+          echo "Function App URL: ${{ steps.deploy.outputs.functionAppUrl }}"
+
+  build-and-deploy-backend:
+    name: Build and Deploy Backend
+    runs-on: ubuntu-latest
+    needs: deploy-infrastructure
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore ./leadbridge-backend/LeadBridge.csproj
+
+      - name: Build
+        run: dotnet build ./leadbridge-backend/LeadBridge.csproj --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish ./leadbridge-backend/LeadBridge.csproj --configuration Release --no-build --output ./publish
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ needs.deploy-infrastructure.outputs.functionAppName }}
+          package: ./publish
+
+      - name: Configure ACS Settings
+        run: |
+          az functionapp config appsettings set \
+            --name ${{ needs.deploy-infrastructure.outputs.functionAppName }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --settings \
+              ACS_CONNECTION_STRING="${{ secrets.ACS_CONNECTION_STRING }}" \
+              ACS_PHONE_NUMBER="${{ secrets.ACS_PHONE_NUMBER }}"
+
+      - name: Restart Function App
+        run: |
+          az functionapp restart \
+            --name ${{ needs.deploy-infrastructure.outputs.functionAppName }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+
+  deploy-extension:
+    name: Package Chrome Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Update Extension API Endpoint
+        run: |
+          FUNCTION_URL="${{ needs.deploy-infrastructure.outputs.functionAppUrl }}"
+          if [ -n "$FUNCTION_URL" ]; then
+            sed -i "s|API_ENDPOINT: '.*'|API_ENDPOINT: '${FUNCTION_URL}/api/newlead'|g" \
+              ./leadbridge-extension/background.js
+          fi
+
+      - name: Create Extension ZIP
+        run: |
+          cd leadbridge-extension
+          zip -r ../leadbridge-extension.zip . -x "*.md" "*.md"
+
+      - name: Upload Extension Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-extension
+          path: leadbridge-extension.zip
+          retention-days: 90

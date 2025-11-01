@@ -1,0 +1,59 @@
+# Azure Functions
+bin/
+obj/
+.azurefunctions/
+local.settings.json
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment files
+.env
+.env.local
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Azure
+__blobstorage__/
+__queuestorage__/
+__azurite_db*__.json
+
+# Logs
+*.log
+
+# Chrome extension (keep for local dev, but don't pack secrets)
+leadbridge-extension/*.pem
+leadbridge-extension/*.crx

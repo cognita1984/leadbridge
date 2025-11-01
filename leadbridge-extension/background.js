@@ -4,10 +4,23 @@
 const CONFIG = {
   POLL_INTERVAL_MINUTES: 1,
   API_ENDPOINT: 'https://leadbridgefunc.azurewebsites.net/api/newlead', // Update after deployment
-  SERVICE_SEEKING_API: 'https://api.serviceseeking.com.au/leads', // May need adjustment based on actual API
   STORAGE_KEY_LEADS: 'seenLeadIds',
   STORAGE_KEY_ENABLED: 'monitoringEnabled',
   STORAGE_KEY_TRADIE_PHONE: 'tradiePhone'
+};
+
+// ✅ CONFIRMED SELECTORS FOR SERVICESEEKING
+// Based on actual HTML inspection - see tools/FOUND_SELECTORS.js
+const SERVICESEEKING_SELECTORS = {
+  inbox: {
+    container: '#scrollable-matched .matched-leads',
+    leadCard: '[id^="matched-lead-card-"]',  // Matches: id="matched-lead-card-5181166"
+    customerName: '.text-sm:first-of-type',
+    jobType: '.text-sm.font-semibold:first-of-type',
+    location: 'a[href*="google.com/maps"]',
+    timeAgo: '.text-xs.text-right span',
+    verifiedBadge: 'svg[width="13"][height="13"]'
+  }
 };
 
 // Initialize extension
@@ -64,29 +77,9 @@ async function checkForNewLeads() {
 
 // Fetch leads from ServiceSeeking
 async function fetchLeads() {
-  try {
-    // Option 1: API call (if ServiceSeeking provides an API)
-    const response = await fetch(CONFIG.SERVICE_SEEKING_API, {
-      credentials: 'include',
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.leads || [];
-
-  } catch (error) {
-    console.error('Error fetching leads:', error);
-
-    // Option 2: Query active tabs for ServiceSeeking pages
-    // This is a fallback method using content scripts
-    return await fetchLeadsFromContentScript();
-  }
+  // ServiceSeeking does NOT have a public API
+  // Must scrape leads from DOM using content scripts
+  return await fetchLeadsFromContentScript();
 }
 
 // Alternative: Fetch leads by querying content script on ServiceSeeking tabs
@@ -118,31 +111,62 @@ async function fetchLeadsFromContentScript() {
 // Function injected into ServiceSeeking page to extract lead data
 function extractLeadsFromPage() {
   // This function runs in the context of the ServiceSeeking page
-  // Adjust selectors based on actual ServiceSeeking HTML structure
+  // Using confirmed selectors from tools/FOUND_SELECTORS.js
+
+  const SELECTORS = {
+    leadCard: '[id^="matched-lead-card-"]',
+    customerName: '.text-sm:first-of-type',
+    jobType: '.text-sm.font-semibold:first-of-type',
+    location: 'a[href*="google.com/maps"]',
+    timeAgo: '.text-xs.text-right span',
+    verifiedBadge: 'svg[width="13"][height="13"]'
+  };
 
   const leads = [];
-  const leadElements = document.querySelectorAll('.lead-item, [data-lead-id]'); // Adjust selector
+  const leadCards = document.querySelectorAll(SELECTORS.leadCard);
 
-  leadElements.forEach(element => {
+  leadCards.forEach(card => {
     try {
-      const leadId = element.getAttribute('data-lead-id') ||
-                    element.querySelector('[data-lead-id]')?.getAttribute('data-lead-id');
+      // Extract lead ID from card's id attribute: "matched-lead-card-5181166" -> "5181166"
+      const cardId = card.getAttribute('id');
+      const leadId = cardId ? cardId.replace('matched-lead-card-', '') : null;
 
       if (!leadId) return;
 
-      // Extract lead details (adjust selectors as needed)
+      // Customer Name
+      const customerNameEl = card.querySelector(SELECTORS.customerName);
+      const customerName = customerNameEl ? customerNameEl.textContent.trim() : 'Unknown';
+
+      // Job Type (remove trailing " in" if present)
+      const jobTypeEl = card.querySelector(SELECTORS.jobType);
+      let jobType = jobTypeEl ? jobTypeEl.textContent.trim() : 'General Service';
+      jobType = jobType.replace(/ in$/, '');
+
+      // Location
+      const locationEl = card.querySelector(SELECTORS.location);
+      const location = locationEl ? locationEl.textContent.trim() : '';
+
+      // Time ago
+      const timeEl = card.querySelector(SELECTORS.timeAgo);
+      const timeAgo = timeEl ? timeEl.textContent.trim() : '';
+
+      // Is verified?
+      const isVerified = card.querySelector(SELECTORS.verifiedBadge) !== null;
+
       const lead = {
         leadId: leadId,
-        customerName: element.querySelector('.customer-name')?.textContent?.trim() || 'Unknown',
-        customerPhone: element.querySelector('.customer-phone')?.textContent?.trim() || '',
-        jobType: element.querySelector('.job-type')?.textContent?.trim() || 'General Service',
-        location: element.querySelector('.location')?.textContent?.trim() || '',
+        customerName: customerName,
+        customerPhone: '', // ⚠️ Phone NOT visible without clicking "Contact Customer"
+        jobType: jobType,
+        location: location,
+        timeAgo: timeAgo,
+        isVerified: isVerified,
         timestamp: new Date().toISOString()
       };
 
       leads.push(lead);
     } catch (err) {
-      console.error('Error extracting lead:', err);
+      console.error('Error extracting lead from card:', err);
     }
   });
 
@@ -275,4 +299,59 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (message.action === 'newLeadDetected') {
+    // Handle new lead detected by content script
+    handleNewLeadFromContentScript(message.lead).then(() => {
+      sendResponse({ success: true });
+    }).catch(error => {
+      console.error('Error handling new lead:', error);
+      sendResponse({ success: false, error: error.message });
+    });
+    return true;
+  }
 });
+
+// Handle new lead detected by content script
+async function handleNewLeadFromContentScript(lead) {
+  try {
+    // Check if monitoring is enabled
+    const { monitoringEnabled, seenLeadIds, tradiePhone } = await chrome.storage.local.get([
+      CONFIG.STORAGE_KEY_ENABLED,
+      CONFIG.STORAGE_KEY_LEADS,
+      CONFIG.STORAGE_KEY_TRADIE_PHONE
+    ]);
+
+    if (!monitoringEnabled) {
+      console.log('Monitoring disabled - ignoring new lead');
+      return;
+    }
+
+    const seenIds = seenLeadIds || [];
+
+    // Check if already seen
+    if (seenIds.includes(lead.leadId)) {
+      console.log('Lead already seen:', lead.leadId);
+      return;
+    }
+
+    console.log('🆕 Processing new lead from content script:', lead.leadId);
+
+    // Send to backend
+    await sendLeadToBackend(lead, tradiePhone);
+
+    // Mark as seen
+    seenIds.push(lead.leadId);
+    await chrome.storage.local.set({
+      [CONFIG.STORAGE_KEY_LEADS]: seenIds.slice(-100) // Keep last 100
+    });
+
+    // Update badge
+    updateBadge('NEW', '#00ff00');
+    setTimeout(() => updateBadge('', ''), 5000); // Clear after 5 seconds
+
+  } catch (error) {
+    console.error('Error handling new lead from content script:', error);
+    updateBadge('!', '#ff0000');
+  }
+}

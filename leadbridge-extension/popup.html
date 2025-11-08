@@ -98,6 +98,27 @@
       outline: 2px solid #00ff88;
     }
 
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+    }
+
+    input[type="number"]:focus {
+      outline: 2px solid #00ff88;
+    }
+
+    .dnd-hours {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
     .toggle-container {
       display: flex;
       align-items: center;
@@ -256,6 +277,32 @@
         placeholder="+61 4XX XXX XXX"
         pattern="^\+?61[0-9\s]{9,12}$"
       />
+    </div>
+
+    <div class="form-group">
+      <label>Do Not Disturb Hours (Optional)</label>
+      <div class="dnd-hours">
+        <div>
+          <label for="dndStart" style="font-size: 11px; opacity: 0.7;">From (24h)</label>
+          <input
+            type="number"
+            id="dndStart"
+            placeholder="22"
+            min="0"
+            max="23"
+          />
+        </div>
+        <div>
+          <label for="dndEnd" style="font-size: 11px; opacity: 0.7;">To (24h)</label>
+          <input
+            type="number"
+            id="dndEnd"
+            placeholder="7"
+            min="0"
+            max="23"
+          />
+        </div>
+      </div>
     </div>
 
     <div class="toggle-container">

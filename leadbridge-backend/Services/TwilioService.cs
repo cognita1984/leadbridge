@@ -3,14 +3,35 @@ using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;
 using Twilio.TwiML;
 using Twilio.TwiML.Voice;
+using Microsoft.Extensions.Logging;
+using System.Security;
 
 namespace LeadBridge.Services;
 
 public interface ITwilioService
 {
-    Task<string> InitiateCallToTradieAsync(string tradiePhone, string leadId, string customerName, string jobType, string location, string? description = null, string? budget = null, string? timing = null);
-    string GenerateTradieCallTwiML(string leadId, string customerName, string jobType, string location, string? description = null, string? budget = null, string? timing = null);
-    string GenerateCustomerBridgeTwiML(string customerPhone);
+    Task<(bool canCall, string reason, string? callSid)> InitiateNotificationCallAsync(
+        string tradiePhone,
+        string leadId,
+        string customerName,
+        string jobType,
+        string location,
+        int? dndStartHour = null,
+        int? dndEndHour = null,
+        string? description = null,
+        string? budget = null,
+        string? timing = null);
+
+    string GenerateNotificationTwiML(
+        string leadId,
+        string customerName,
+        string jobType,
+        string location,
+        string? description = null,
+        string? budget = null,
+        string? timing = null);
+
+    bool ValidateWebhookSignature(string signature, string url, Dictionary<string, string> parameters);
 }
 
 public class TwilioService : ITwilioService
@@ -19,31 +40,91 @@ public class TwilioService : ITwilioService
     private readonly string _authToken;
     private readonly string _twilioPhone;
     private readonly string _callbackBaseUrl;
+    private readonly ILogger<TwilioService> _logger;
 
-    public TwilioService(string accountSid, string authToken, string twilioPhone, string callbackBaseUrl)
+    // Australian timezone offset (AEDT/AEST)
+    private static readonly TimeZoneInfo AustralianTimeZone =
+        TimeZoneInfo.FindSystemTimeZoneById("AUS Eastern Standard Time");
+
+    public TwilioService(
+        string accountSid,
+        string authToken,
+        string twilioPhone,
+        string callbackBaseUrl,
+        ILogger<TwilioService> logger)
     {
         _accountSid = accountSid;
         _authToken = authToken;
         _twilioPhone = twilioPhone;
         _callbackBaseUrl = callbackBaseUrl;
+        _logger = logger;
 
         TwilioClient.Init(_accountSid, _authToken);
     }
 
-    public async Task<string> InitiateCallToTradieAsync(
+    /// <summary>
+    /// Sanitize input for TwiML to prevent XML injection
+    /// </summary>
+    private static string SanitizeForTwiML(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        return SecurityElement.Escape(input);
+    }
+
+    /// <summary>
+    /// Check if current time falls within DND hours
+    /// </summary>
+    private bool IsWithinDndHours(int? dndStartHour, int? dndEndHour)
+    {
+        if (!dndStartHour.HasValue || !dndEndHour.HasValue)
+            return false;
+
+        var australianNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, AustralianTimeZone);
+        var currentHour = australianNow.Hour;
+
+        _logger.LogInformation("DND Check - Current hour (AU): {Hour}, DND window: {Start}-{End}",
+            currentHour, dndStartHour.Value, dndEndHour.Value);
+
+        // Handle overnight DND (e.g., 22:00 - 07:00)
+        if (dndStartHour.Value > dndEndHour.Value)
+        {
+            return currentHour >= dndStartHour.Value || currentHour < dndEndHour.Value;
+        }
+
+        // Normal DND (e.g., 08:00 - 17:00)
+        return currentHour >= dndStartHour.Value && currentHour < dndEndHour.Value;
+    }
+
+    public async Task<(bool canCall, string reason, string? callSid)> InitiateNotificationCallAsync(
         string tradiePhone,
         string leadId,
         string customerName,
         string jobType,
         string location,
+        int? dndStartHour = null,
+        int? dndEndHour = null,
         string? description = null,
         string? budget = null,
         string? timing = null)
     {
         try
         {
-            // Build TwiML URL for initial greeting and gather
-            var queryParams = $"leadId={leadId}&customerName={Uri.EscapeDataString(customerName)}&jobType={Uri.EscapeDataString(jobType)}&location={Uri.EscapeDataString(location)}";
+            // Check DND hours
+            if (IsWithinDndHours(dndStartHour, dndEndHour))
+            {
+                var australianNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, AustralianTimeZone);
+                _logger.LogInformation("Call skipped - within DND hours. Current time (AU): {Time}",
+                    australianNow.ToString("HH:mm"));
+                return (false, "DND_HOURS", null);
+            }
+
+            // Build TwiML URL for notification
+            var queryParams = $"leadId={Uri.EscapeDataString(leadId)}" +
+                            $"&customerName={Uri.EscapeDataString(customerName)}" +
+                            $"&jobType={Uri.EscapeDataString(jobType)}" +
+                            $"&location={Uri.EscapeDataString(location)}";
 
             if (!string.IsNullOrWhiteSpace(description))
                 queryParams += $"&description={Uri.EscapeDataString(description)}";
@@ -52,7 +133,7 @@ public class TwilioService : ITwilioService
             if (!string.IsNullOrWhiteSpace(timing))
                 queryParams += $"&timing={Uri.EscapeDataString(timing)}";
 
-            var twimlUrl = $"{_callbackBaseUrl}/api/twilio/tradie-greeting?{queryParams}";
+            var twimlUrl = $"{_callbackBaseUrl}/api/twilio/notification?{queryParams}";
 
             var call = await CallResource.CreateAsync(
                 to: new PhoneNumber(tradiePhone),
@@ -63,17 +144,17 @@ public class TwilioService : ITwilioService
                 statusCallbackMethod: Twilio.Http.HttpMethod.Post
             );
 
-            Console.WriteLine($"[Twilio] Call initiated to tradie. CallSid: {call.Sid}");
-            return call.Sid;
+            _logger.LogInformation("Notification call initiated to tradie. CallSid: {CallSid}", call.Sid);
+            return (true, "SUCCESS", call.Sid);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Twilio] Error initiating call: {ex.Message}");
-            throw;
+            _logger.LogError(ex, "Error initiating notification call");
+            return (false, ex.Message, null);
         }
     }
 
-    public string GenerateTradieCallTwiML(
+    public string GenerateNotificationTwiML(
         string leadId,
         string customerName,
         string jobType,
@@ -84,75 +165,55 @@ public class TwilioService : ITwilioService
     {
         var response = new VoiceResponse();
 
-        // Build detailed greeting message
-        var message = $"You have a new ServiceSeeking lead. " +
-                     $"Customer name: {customerName}. " +
-                     $"Job type: {jobType}. " +
-                     $"Location: {location}. ";
+        // Sanitize all inputs
+        var safeCustomerName = SanitizeForTwiML(customerName);
+        var safeJobType = SanitizeForTwiML(jobType);
+        var safeLocation = SanitizeForTwiML(location);
+        var safeDescription = SanitizeForTwiML(description);
+        var safeBudget = SanitizeForTwiML(budget);
+        var safeTiming = SanitizeForTwiML(timing);
 
-        // Add optional details if available
-        if (!string.IsNullOrWhiteSpace(description))
+        // Build concise notification message
+        var message = $"New ServiceSeeking lead. ";
+
+        if (!string.IsNullOrWhiteSpace(safeJobType))
+            message += $"{safeJobType}. ";
+
+        if (!string.IsNullOrWhiteSpace(safeLocation))
+            message += $"Location: {safeLocation}. ";
+
+        if (!string.IsNullOrWhiteSpace(safeBudget))
+            message += $"Budget: {safeBudget}. ";
+
+        if (!string.IsNullOrWhiteSpace(safeTiming))
+            message += $"Timing: {safeTiming}. ";
+
+        if (!string.IsNullOrWhiteSpace(safeDescription))
         {
             // Limit description length for speech
-            var shortDesc = description.Length > 100 ? description.Substring(0, 100) + "..." : description;
+            var shortDesc = safeDescription.Length > 80 ? safeDescription.Substring(0, 80) + "..." : safeDescription;
             message += $"Description: {shortDesc}. ";
         }
 
-        if (!string.IsNullOrWhiteSpace(budget))
-            message += $"Budget: {budget}. ";
+        message += "Check ServiceSeeking to respond. Goodbye.";
 
-        if (!string.IsNullOrWhiteSpace(timing))
-            message += $"Timing: {timing}. ";
-
-        message += "Press 1 to call the customer now, or press 2 to skip this lead.";
-
-        var gather = new Gather(
-            numDigits: 1,
-            action: new Uri($"{_callbackBaseUrl}/api/twilio/tradie-response?leadId={leadId}", UriKind.Relative),
-            method: Twilio.Http.HttpMethod.Post
-        );
-
-        gather.Say(message, voice: "Polly.Nicole", language: "en-AU");
-
-        response.Append(gather);
-
-        // If no input, repeat the message
-        response.Say("We did not receive any input. Goodbye.", voice: "Polly.Nicole", language: "en-AU");
+        response.Say(message, voice: "Polly.Nicole", language: "en-AU");
         response.Hangup();
 
         return response.ToString();
     }
 
-    public string GenerateCustomerBridgeTwiML(string customerPhone)
+    public bool ValidateWebhookSignature(string signature, string url, Dictionary<string, string> parameters)
     {
-        var response = new VoiceResponse();
-
-        response.Say("Connecting you to the customer now. Please wait.", voice: "Polly.Nicole", language: "en-AU");
-
-        var dial = new Dial(
-            action: new Uri($"{_callbackBaseUrl}/api/twilio/call-complete", UriKind.Relative),
-            callerId: _twilioPhone
-        );
-
-        dial.Number(customerPhone);
-        response.Append(dial);
-
-        return response.ToString();
-    }
-
-    public string GenerateSkipLeadTwiML()
-    {
-        var response = new VoiceResponse();
-        response.Say("Lead skipped. Goodbye.", voice: "Polly.Nicole", language: "en-AU");
-        response.Hangup();
-        return response.ToString();
-    }
-
-    public string GenerateInvalidInputTwiML()
-    {
-        var response = new VoiceResponse();
-        response.Say("Invalid input. Please press 1 to call customer or 2 to skip. Goodbye.", voice: "Polly.Nicole", language: "en-AU");
-        response.Hangup();
-        return response.ToString();
+        try
+        {
+            var validator = new Twilio.Security.RequestValidator(_authToken);
+            return validator.Validate(url, parameters, signature);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating Twilio webhook signature");
+            return false;
+        }
     }
 }

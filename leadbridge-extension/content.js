@@ -1,6 +1,7 @@
 // LeadBridge AU - Content Script
 // Monitors ServiceSeeking inbox for new leads in real-time using MutationObserver
 
+// Constants for selectors and configuration
 const SELECTORS = {
   container: '#scrollable-matched .matched-leads',
   leadCard: '[id^="matched-lead-card-"]',
@@ -22,8 +23,13 @@ const SELECTORS = {
   }
 };
 
+const MAX_SEEN_LEADS = 100; // Cap for memory management
+const MAX_RETRY_ATTEMPTS = 10; // Prevent infinite retry loop
+const RETRY_DELAY_MS = 2000;
+
 let observer = null;
 let seenLeadIds = new Set();
+let retryCount = 0;
 
 // Initialize content script
 console.log('LeadBridge AU content script loaded');
@@ -60,7 +66,6 @@ function extractLeadFromCard(card) {
     return {
       leadId: leadId,
       customerName: customerName,
-      customerPhone: '', // ⚠️ Phone NOT visible without clicking "Contact Customer"
       jobType: jobType,
       location: location,
       timeAgo: timeAgo,
@@ -85,6 +90,12 @@ function getAllVisibleLeads() {
       seenLeadIds.add(lead.leadId);
     }
   });
+
+  // Cap the Set size to prevent memory leak
+  if (seenLeadIds.size > MAX_SEEN_LEADS) {
+    const leadsArray = Array.from(seenLeadIds);
+    seenLeadIds = new Set(leadsArray.slice(-MAX_SEEN_LEADS));
+  }
 
   return leads;
 }
@@ -250,12 +261,22 @@ function startMonitoring() {
 
   if (!container) {
     console.warn('ServiceSeeking inbox container not found. Will retry...');
-    // Retry after 2 seconds in case page is still loading
-    setTimeout(startMonitoring, 2000);
+
+    // Retry with exponential backoff and max attempts
+    if (retryCount < MAX_RETRY_ATTEMPTS) {
+      retryCount++;
+      console.log(`Retry attempt ${retryCount}/${MAX_RETRY_ATTEMPTS}`);
+      setTimeout(startMonitoring, RETRY_DELAY_MS);
+    } else {
+      console.error(`Failed to find inbox container after ${MAX_RETRY_ATTEMPTS} attempts. Giving up.`);
+    }
     return;
   }
 
   console.log('✅ Found inbox container, starting lead monitoring');
+
+  // Reset retry count on success
+  retryCount = 0;
 
   // Get all existing leads to mark as seen
   const existingLeads = getAllVisibleLeads();
@@ -271,6 +292,13 @@ function startMonitoring() {
 
           if (lead && lead.leadId && !seenLeadIds.has(lead.leadId)) {
             seenLeadIds.add(lead.leadId);
+
+            // Cap the Set size to prevent memory leak
+            if (seenLeadIds.size > MAX_SEEN_LEADS) {
+              const leadsArray = Array.from(seenLeadIds);
+              seenLeadIds = new Set(leadsArray.slice(-MAX_SEEN_LEADS));
+            }
+
             handleNewLead(lead);
           }
         }

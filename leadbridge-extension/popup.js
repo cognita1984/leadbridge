@@ -3,6 +3,8 @@
 document.addEventListener('DOMContentLoaded', async () => {
   // Elements
   const tradiePhoneInput = document.getElementById('tradiePhone');
+  const dndStartInput = document.getElementById('dndStart');
+  const dndEndInput = document.getElementById('dndEnd');
   const toggleMonitoring = document.getElementById('toggleMonitoring');
   const saveBtn = document.getElementById('saveBtn');
   const testBtn = document.getElementById('testBtn');
@@ -26,6 +28,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (response) {
         tradiePhoneInput.value = response.tradiePhone || '';
+        dndStartInput.value = response.dndStartHour !== undefined ? response.dndStartHour : '';
+        dndEndInput.value = response.dndEndHour !== undefined ? response.dndEndHour : '';
         toggleMonitoring.checked = response.enabled || false;
         leadCount.textContent = response.leadCount || 0;
 
@@ -40,6 +44,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Handle save button click
   async function handleSave() {
     const phone = tradiePhoneInput.value.trim();
+    const dndStart = dndStartInput.value ? parseInt(dndStartInput.value) : null;
+    const dndEnd = dndEndInput.value ? parseInt(dndEndInput.value) : null;
 
     // Validate phone number
     if (!phone) {
@@ -52,11 +58,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
+    // Validate DND hours if provided
+    if ((dndStart !== null && dndEnd === null) || (dndStart === null && dndEnd !== null)) {
+      showMessage('Please provide both DND start and end hours, or leave both empty', 'error');
+      return;
+    }
+
+    if (dndStart !== null && dndEnd !== null) {
+      if (dndStart < 0 || dndStart > 23 || dndEnd < 0 || dndEnd > 23) {
+        showMessage('DND hours must be between 0 and 23', 'error');
+        return;
+      }
+    }
+
     try {
       // Save phone number
       await chrome.runtime.sendMessage({
         action: 'setTradiePhone',
         phone: phone
+      });
+
+      // Save DND hours
+      await chrome.runtime.sendMessage({
+        action: 'setDndHours',
+        dndStartHour: dndStart,
+        dndEndHour: dndEnd
       });
 
       // Save monitoring state
@@ -65,7 +91,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         enabled: toggleMonitoring.checked
       });
 
-      showMessage('Settings saved successfully!', 'success');
+      const dndInfo = dndStart !== null && dndEnd !== null
+        ? ` (DND: ${dndStart}:00-${dndEnd}:00)`
+        : '';
+      showMessage(`Settings saved successfully!${dndInfo}`, 'success');
       updateStatusDisplay(toggleMonitoring.checked);
 
     } catch (error) {

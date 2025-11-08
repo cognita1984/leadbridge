@@ -17,17 +17,19 @@ public class HttpTriggerLead
 {
     private readonly ILogger<HttpTriggerLead> _logger;
     private readonly ITwilioService _twilioService;
-    private readonly ITableClientFactory _tableFactory;
-    private const string HARDCODED_CUSTOMER_PHONE = "+61432584824"; // For testing
+    private readonly LeadStorageService _leadStorage;
+    private readonly CallEventStorageService _callEventStorage;
 
     public HttpTriggerLead(
         ILogger<HttpTriggerLead> logger,
         ITwilioService twilioService,
-        ITableClientFactory tableFactory)
+        LeadStorageService leadStorage,
+        CallEventStorageService callEventStorage)
     {
         _logger = logger;
         _twilioService = twilioService;
-        _tableFactory = tableFactory;
+        _leadStorage = leadStorage;
+        _callEventStorage = callEventStorage;
     }
 
     /// <summary>
@@ -74,12 +76,10 @@ public class HttpTriggerLead
                 lead.LeadId, lead.CustomerName, lead.JobType, lead.Location);
 
             // Store lead in Table Storage
-            var leadStorage = new LeadStorageService(_tableFactory, new LoggerFactory().CreateLogger<LeadStorageService>());
             var leadEntity = new LeadEntity
             {
                 LeadId = lead.LeadId,
                 CustomerName = lead.CustomerName,
-                CustomerPhone = HARDCODED_CUSTOMER_PHONE, // Hardcoded for testing
                 TradiePhone = lead.TradiePhone,
                 JobType = lead.JobType,
                 Location = lead.Location,
@@ -87,49 +87,46 @@ public class HttpTriggerLead
                 Status = "Received"
             };
 
-            await leadStorage.SaveLeadAsync(leadEntity);
+            await _leadStorage.SaveLeadAsync(leadEntity);
 
-            // Initiate call to tradie using Twilio
-            string callSid;
-            try
+            // Initiate notification call to tradie using Twilio
+            var (canCall, reason, callSid) = await _twilioService.InitiateNotificationCallAsync(
+                lead.TradiePhone,
+                lead.LeadId,
+                lead.CustomerName,
+                lead.JobType,
+                lead.Location,
+                lead.DndStartHour,
+                lead.DndEndHour,
+                lead.Description,
+                lead.Budget,
+                lead.Timing);
+
+            if (!canCall)
             {
-                callSid = await _twilioService.InitiateCallToTradieAsync(
-                    lead.TradiePhone,
-                    lead.LeadId,
-                    lead.CustomerName,
-                    lead.JobType,
-                    lead.Location,
-                    lead.Description,
-                    lead.Budget,
-                    lead.Timing);
+                var status = reason == "DND_HOURS" ? "Skipped_DND" : "Failed";
+                await _leadStorage.UpdateLeadStatusAsync(lead.LeadId, DateTime.UtcNow, status);
 
-                // Update lead status
-                await leadStorage.UpdateLeadStatusAsync(lead.LeadId, DateTime.UtcNow, "Calling", callSid);
+                _logger.LogWarning("Notification call skipped for lead: {LeadId}, Reason: {Reason}", lead.LeadId, reason);
 
-                _logger.LogInformation("Twilio call initiated successfully. CallSid: {CallSid}", callSid);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to initiate Twilio call for lead: {LeadId}", lead.LeadId);
-
-                // Update lead status to failed
-                await leadStorage.UpdateLeadStatusAsync(lead.LeadId, DateTime.UtcNow, "Failed");
-
-                return await CreateResponseAsync(req, HttpStatusCode.InternalServerError, new LeadResponse
+                return await CreateResponseAsync(req, HttpStatusCode.OK, new LeadResponse
                 {
-                    Success = false,
-                    Message = $"Failed to initiate call: {ex.Message}",
+                    Success = true,
+                    Message = $"Lead received but call skipped: {reason}",
                     LeadId = lead.LeadId
                 });
             }
 
+            // Update lead status
+            await _leadStorage.UpdateLeadStatusAsync(lead.LeadId, DateTime.UtcNow, "Notified", callSid);
+
+            _logger.LogInformation("Notification call initiated successfully. CallSid: {CallSid}", callSid);
+
             // Log call event
-            var callEventStorage = new CallEventStorageService(_tableFactory, new LoggerFactory().CreateLogger<CallEventStorageService>());
             var callEvent = new CallEventEntity
             {
                 LeadId = lead.LeadId,
-                CallId = callSid,
-                CustomerPhone = HARDCODED_CUSTOMER_PHONE,
+                CallId = callSid!,
                 TradiePhone = lead.TradiePhone,
                 JobType = lead.JobType,
                 Location = lead.Location,
@@ -137,13 +134,13 @@ public class HttpTriggerLead
                 CreatedAt = DateTime.UtcNow
             };
 
-            await callEventStorage.SaveCallEventAsync(callEvent);
+            await _callEventStorage.SaveCallEventAsync(callEvent);
 
             // Return success response
             return await CreateResponseAsync(req, HttpStatusCode.OK, new LeadResponse
             {
                 Success = true,
-                Message = "Lead received and call initiated via Twilio",
+                Message = "Lead received and notification call initiated",
                 LeadId = lead.LeadId,
                 CallId = callSid
             });
@@ -160,16 +157,23 @@ public class HttpTriggerLead
     }
 
     /// <summary>
-    /// POST /api/twilio/tradie-greeting - TwiML response for tradie call
+    /// POST/GET /api/twilio/notification - TwiML response for tradie notification call
     /// </summary>
-    [Function("TwilioTradieGreeting")]
-    public async Task<HttpResponseData> TwilioTradieGreeting(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "get", Route = "twilio/tradie-greeting")] HttpRequestData req)
+    [Function("TwilioNotification")]
+    public async Task<HttpResponseData> TwilioNotification(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post", "get", Route = "twilio/notification")] HttpRequestData req)
     {
-        _logger.LogInformation("TwilioTradieGreeting endpoint invoked");
+        _logger.LogInformation("TwilioNotification endpoint invoked");
 
         try
         {
+            // Validate Twilio webhook signature
+            if (!ValidateTwilioRequest(req))
+            {
+                _logger.LogWarning("Invalid Twilio webhook signature");
+                return req.CreateResponse(HttpStatusCode.Forbidden);
+            }
+
             var query = HttpUtility.ParseQueryString(req.Url.Query);
             var leadId = query["leadId"] ?? "unknown";
             var customerName = query["customerName"] ?? "Unknown Customer";
@@ -179,73 +183,10 @@ public class HttpTriggerLead
             var budget = query["budget"];
             var timing = query["timing"];
 
-            _logger.LogInformation("Generating TwiML for lead: {LeadId}", leadId);
+            _logger.LogInformation("Generating notification TwiML for lead: {LeadId}", leadId);
 
-            var twiml = _twilioService.GenerateTradieCallTwiML(leadId, customerName, jobType, location, description, budget, timing);
-
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/xml");
-            await response.WriteStringAsync(twiml);
-
-            return response;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error generating tradie greeting TwiML");
-            var response = req.CreateResponse(HttpStatusCode.InternalServerError);
-            await response.WriteStringAsync($"Error: {ex.Message}");
-            return response;
-        }
-    }
-
-    /// <summary>
-    /// POST /api/twilio/tradie-response - Handles keypress from tradie (1 = call customer, 2 = skip)
-    /// </summary>
-    [Function("TwilioTradieResponse")]
-    public async Task<HttpResponseData> TwilioTradieResponse(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "twilio/tradie-response")] HttpRequestData req)
-    {
-        _logger.LogInformation("TwilioTradieResponse endpoint invoked");
-
-        try
-        {
-            var query = HttpUtility.ParseQueryString(req.Url.Query);
-            var leadId = query["leadId"] ?? "unknown";
-
-            // Read form data
-            var formData = await req.ReadFormAsync();
-            var digits = formData["Digits"]?.ToString();
-
-            _logger.LogInformation("Tradie pressed: {Digits} for lead: {LeadId}", digits, leadId);
-
-            string twiml;
-
-            if (digits == "1")
-            {
-                // Call customer
-                _logger.LogInformation("Tradie chose to call customer for lead: {LeadId}", leadId);
-                twiml = _twilioService.GenerateCustomerBridgeTwiML(HARDCODED_CUSTOMER_PHONE);
-
-                // Update lead status
-                var leadStorage = new LeadStorageService(_tableFactory, new LoggerFactory().CreateLogger<LeadStorageService>());
-                await leadStorage.UpdateLeadStatusAsync(leadId, DateTime.UtcNow, "Calling Customer");
-            }
-            else if (digits == "2")
-            {
-                // Skip lead
-                _logger.LogInformation("Tradie chose to skip lead: {LeadId}", leadId);
-                twiml = ((TwilioService)_twilioService).GenerateSkipLeadTwiML();
-
-                // Update lead status
-                var leadStorage = new LeadStorageService(_tableFactory, new LoggerFactory().CreateLogger<LeadStorageService>());
-                await leadStorage.UpdateLeadStatusAsync(leadId, DateTime.UtcNow, "Skipped");
-            }
-            else
-            {
-                // Invalid input
-                _logger.LogWarning("Invalid keypress: {Digits} for lead: {LeadId}", digits, leadId);
-                twiml = ((TwilioService)_twilioService).GenerateInvalidInputTwiML();
-            }
+            var twiml = _twilioService.GenerateNotificationTwiML(
+                leadId, customerName, jobType, location, description, budget, timing);
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "text/xml");
@@ -255,7 +196,7 @@ public class HttpTriggerLead
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error handling tradie response");
+            _logger.LogError(ex, "Error generating notification TwiML");
             var response = req.CreateResponse(HttpStatusCode.InternalServerError);
             await response.WriteStringAsync($"Error: {ex.Message}");
             return response;
@@ -263,7 +204,7 @@ public class HttpTriggerLead
     }
 
     /// <summary>
-    /// POST /api/twilio/call-complete - Called when customer call ends
+    /// POST /api/twilio/call-complete - Called when notification call ends
     /// </summary>
     [Function("TwilioCallComplete")]
     public async Task<HttpResponseData> TwilioCallComplete(
@@ -273,6 +214,13 @@ public class HttpTriggerLead
 
         try
         {
+            // Validate Twilio webhook signature
+            if (!ValidateTwilioRequest(req))
+            {
+                _logger.LogWarning("Invalid Twilio webhook signature");
+                return req.CreateResponse(HttpStatusCode.Forbidden);
+            }
+
             var formData = await req.ReadFormAsync();
             var callSid = formData["CallSid"]?.ToString();
             var callDuration = formData["CallDuration"]?.ToString();
@@ -282,10 +230,9 @@ public class HttpTriggerLead
                 callSid, callDuration, callStatus);
 
             // Update call event in storage
-            var callEventStorage = new CallEventStorageService(_tableFactory, new LoggerFactory().CreateLogger<CallEventStorageService>());
             if (!string.IsNullOrEmpty(callSid) && int.TryParse(callDuration, out var duration))
             {
-                await callEventStorage.UpdateCallDurationAsync(callSid, duration, callStatus ?? "completed");
+                await _callEventStorage.UpdateCallDurationAsync(callSid, duration, callStatus ?? "completed");
             }
 
             var response = req.CreateResponse(HttpStatusCode.OK);
@@ -312,6 +259,13 @@ public class HttpTriggerLead
 
         try
         {
+            // Validate Twilio webhook signature
+            if (!ValidateTwilioRequest(req))
+            {
+                _logger.LogWarning("Invalid Twilio webhook signature");
+                return req.CreateResponse(HttpStatusCode.Forbidden);
+            }
+
             var formData = await req.ReadFormAsync();
             var callSid = formData["CallSid"]?.ToString();
             var callStatus = formData["CallStatus"]?.ToString();
@@ -320,10 +274,9 @@ public class HttpTriggerLead
                 callSid, callStatus);
 
             // Log status change
-            var callEventStorage = new CallEventStorageService(_tableFactory, new LoggerFactory().CreateLogger<CallEventStorageService>());
             if (!string.IsNullOrEmpty(callSid) && !string.IsNullOrEmpty(callStatus))
             {
-                await callEventStorage.UpdateCallStatusAsync(callSid, callStatus);
+                await _callEventStorage.UpdateCallStatusAsync(callSid, callStatus);
             }
 
             var response = req.CreateResponse(HttpStatusCode.OK);
@@ -353,11 +306,56 @@ public class HttpTriggerLead
         {
             status = "healthy",
             timestamp = DateTime.UtcNow,
-            version = "2.0.0-twilio",
+            version = "3.0.0-notification-only",
             provider = "Twilio"
         });
 
         return response;
+    }
+
+    /// <summary>
+    /// Validate Twilio webhook request signature
+    /// </summary>
+    private bool ValidateTwilioRequest(HttpRequestData req)
+    {
+        try
+        {
+            // Get signature from header
+            if (!req.Headers.TryGetValues("X-Twilio-Signature", out var signatures))
+            {
+                _logger.LogWarning("Missing X-Twilio-Signature header");
+                return false;
+            }
+
+            var signature = signatures.FirstOrDefault();
+            if (string.IsNullOrEmpty(signature))
+            {
+                _logger.LogWarning("Empty X-Twilio-Signature header");
+                return false;
+            }
+
+            // Get full URL
+            var url = req.Url.ToString();
+
+            // Get form parameters
+            var parameters = new Dictionary<string, string>();
+            if (req.Method.ToUpper() == "POST")
+            {
+                var formData = req.ReadFormAsync().Result;
+                foreach (var key in formData.Keys)
+                {
+                    parameters[key] = formData[key]?.ToString() ?? string.Empty;
+                }
+            }
+
+            // Validate signature
+            return _twilioService.ValidateWebhookSignature(signature, url, parameters);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error validating Twilio request");
+            return false;
+        }
     }
 
     private async Task<HttpResponseData> CreateResponseAsync(
@@ -367,8 +365,12 @@ public class HttpTriggerLead
     {
         var response = req.CreateResponse(statusCode);
 
-        // Set CORS headers for Chrome extension
-        response.Headers.Add("Access-Control-Allow-Origin", "*");
+        // Set CORS headers for Chrome extension - RESTRICTED to extension origin
+        // TODO: Replace with actual extension ID after publishing
+        // Format: chrome-extension://YOUR_EXTENSION_ID
+        var allowedOrigin = Environment.GetEnvironmentVariable("ALLOWED_ORIGIN") ?? "*";
+
+        response.Headers.Add("Access-Control-Allow-Origin", allowedOrigin);
         response.Headers.Add("Access-Control-Allow-Methods", "POST, OPTIONS");
         response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
 

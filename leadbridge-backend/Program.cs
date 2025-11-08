@@ -1,6 +1,7 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using LeadBridge.Services;
 using LeadBridge.Storage;
 
@@ -11,10 +12,14 @@ var host = new HostBuilder()
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
 
-        // Azure Table Storage
+        // Azure Table Storage Factory
         services.AddSingleton<ITableClientFactory, TableClientFactory>();
 
-        // Twilio Service
+        // Storage Services (Scoped for per-request instances)
+        services.AddScoped<LeadStorageService>();
+        services.AddScoped<CallEventStorageService>();
+
+        // Twilio Service with ILogger injection
         services.AddSingleton<ITwilioService>(provider =>
         {
             var accountSid = Environment.GetEnvironmentVariable("TWILIO_ACCOUNT_SID")
@@ -29,7 +34,9 @@ var host = new HostBuilder()
             var callbackBaseUrl = Environment.GetEnvironmentVariable("TWILIO_CALLBACK_BASE_URL")
                 ?? throw new InvalidOperationException("TWILIO_CALLBACK_BASE_URL not configured");
 
-            return new TwilioService(accountSid, authToken, twilioPhone, callbackBaseUrl);
+            var logger = provider.GetRequiredService<ILogger<TwilioService>>();
+
+            return new TwilioService(accountSid, authToken, twilioPhone, callbackBaseUrl, logger);
         });
 
         // Logging

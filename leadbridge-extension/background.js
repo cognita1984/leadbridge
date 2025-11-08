@@ -6,7 +6,9 @@ const CONFIG = {
   API_ENDPOINT: 'https://leadbridgefunc.azurewebsites.net/api/newlead', // Update after deployment
   STORAGE_KEY_LEADS: 'seenLeadIds',
   STORAGE_KEY_ENABLED: 'monitoringEnabled',
-  STORAGE_KEY_TRADIE_PHONE: 'tradiePhone'
+  STORAGE_KEY_TRADIE_PHONE: 'tradiePhone',
+  STORAGE_KEY_DND_START: 'dndStartHour',
+  STORAGE_KEY_DND_END: 'dndEndHour'
 };
 
 // ✅ CONFIRMED SELECTORS FOR SERVICESEEKING
@@ -31,7 +33,9 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({
     [CONFIG.STORAGE_KEY_LEADS]: [],
     [CONFIG.STORAGE_KEY_ENABLED]: false,
-    [CONFIG.STORAGE_KEY_TRADIE_PHONE]: ''
+    [CONFIG.STORAGE_KEY_TRADIE_PHONE]: '',
+    [CONFIG.STORAGE_KEY_DND_START]: null,
+    [CONFIG.STORAGE_KEY_DND_END]: null
   });
 
   // Create polling alarm
@@ -61,8 +65,6 @@ async function checkForNewLeads() {
     console.log('Polling for new leads...');
 
     // Fetch leads from ServiceSeeking
-    // Note: This assumes ServiceSeeking has an API endpoint. In reality, you may need to
-    // scrape the webpage or use content scripts to detect new leads
     const leads = await fetchLeads();
 
     if (leads && leads.length > 0) {
@@ -156,7 +158,6 @@ function extractLeadsFromPage() {
       const lead = {
         leadId: leadId,
         customerName: customerName,
-        customerPhone: '', // ⚠️ Phone NOT visible without clicking "Contact Customer"
         jobType: jobType,
         location: location,
         timeAgo: timeAgo,
@@ -175,9 +176,11 @@ function extractLeadsFromPage() {
 
 // Process new leads
 async function processNewLeads(leads) {
-  const { seenLeadIds, tradiePhone } = await chrome.storage.local.get([
+  const { seenLeadIds, tradiePhone, dndStartHour, dndEndHour } = await chrome.storage.local.get([
     CONFIG.STORAGE_KEY_LEADS,
-    CONFIG.STORAGE_KEY_TRADIE_PHONE
+    CONFIG.STORAGE_KEY_TRADIE_PHONE,
+    CONFIG.STORAGE_KEY_DND_START,
+    CONFIG.STORAGE_KEY_DND_END
   ]);
 
   const seenIds = seenLeadIds || [];
@@ -193,28 +196,32 @@ async function processNewLeads(leads) {
 
   // Send each new lead to backend
   for (const lead of newLeads) {
-    await sendLeadToBackend(lead, tradiePhone);
+    await sendLeadToBackend(lead, tradiePhone, dndStartHour, dndEndHour);
     seenIds.push(lead.leadId);
   }
 
-  // Update seen leads
+  // Update seen leads (keep last 100 to avoid bloat)
   await chrome.storage.local.set({
-    [CONFIG.STORAGE_KEY_LEADS]: seenIds.slice(-100) // Keep last 100 to avoid bloat
+    [CONFIG.STORAGE_KEY_LEADS]: seenIds.slice(-100)
   });
 }
 
 // Send lead to Azure backend
-async function sendLeadToBackend(lead, tradiePhone) {
+async function sendLeadToBackend(lead, tradiePhone, dndStartHour, dndEndHour) {
   try {
     console.log('Sending lead to backend:', lead.leadId);
 
     const payload = {
       leadId: lead.leadId,
       customerName: lead.customerName,
-      customerPhone: lead.customerPhone,
       jobType: lead.jobType,
       location: lead.location,
-      tradiePhone: tradiePhone, // Configured in popup
+      tradiePhone: tradiePhone,
+      description: lead.description,
+      budget: lead.budget,
+      timing: lead.timing,
+      dndStartHour: dndStartHour,
+      dndEndHour: dndEndHour,
       timestamp: lead.timestamp || new Date().toISOString()
     };
 
@@ -233,11 +240,19 @@ async function sendLeadToBackend(lead, tradiePhone) {
     const result = await response.json();
     console.log('Backend response:', result);
 
-    // Show notification
+    // Show notification based on response
+    let notificationMessage = `New lead: ${lead.jobType} in ${lead.location}`;
+    if (result.message && result.message.includes('DND')) {
+      notificationMessage += ' (call skipped - DND hours)';
+    } else {
+      notificationMessage += ' - calling you now...';
+    }
+
     chrome.notifications.create({
       type: 'basic',
       title: 'LeadBridge AU',
-      message: `New lead detected: ${lead.jobType} in ${lead.location}. Calling tradie...`
+      message: notificationMessage,
+      iconUrl: 'icon48.png' // Make sure this exists or remove this line
     });
 
   } catch (error) {
@@ -258,12 +273,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     chrome.storage.local.get([
       CONFIG.STORAGE_KEY_ENABLED,
       CONFIG.STORAGE_KEY_TRADIE_PHONE,
-      CONFIG.STORAGE_KEY_LEADS
+      CONFIG.STORAGE_KEY_LEADS,
+      CONFIG.STORAGE_KEY_DND_START,
+      CONFIG.STORAGE_KEY_DND_END
     ]).then(data => {
       sendResponse({
         enabled: data[CONFIG.STORAGE_KEY_ENABLED] || false,
         tradiePhone: data[CONFIG.STORAGE_KEY_TRADIE_PHONE] || '',
-        leadCount: (data[CONFIG.STORAGE_KEY_LEADS] || []).length
+        leadCount: (data[CONFIG.STORAGE_KEY_LEADS] || []).length,
+        dndStartHour: data[CONFIG.STORAGE_KEY_DND_START],
+        dndEndHour: data[CONFIG.STORAGE_KEY_DND_END]
       });
     });
     return true; // Keep channel open for async response
@@ -285,6 +304,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       [CONFIG.STORAGE_KEY_TRADIE_PHONE]: message.phone
     }).then(() => {
       console.log('Tradie phone updated:', message.phone);
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (message.action === 'setDndHours') {
+    chrome.storage.local.set({
+      [CONFIG.STORAGE_KEY_DND_START]: message.dndStartHour,
+      [CONFIG.STORAGE_KEY_DND_END]: message.dndEndHour
+    }).then(() => {
+      console.log('DND hours updated:', message.dndStartHour, '-', message.dndEndHour);
       sendResponse({ success: true });
     });
     return true;
@@ -315,10 +345,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function handleNewLeadFromContentScript(lead) {
   try {
     // Check if monitoring is enabled
-    const { monitoringEnabled, seenLeadIds, tradiePhone } = await chrome.storage.local.get([
+    const { monitoringEnabled, seenLeadIds, tradiePhone, dndStartHour, dndEndHour } = await chrome.storage.local.get([
       CONFIG.STORAGE_KEY_ENABLED,
       CONFIG.STORAGE_KEY_LEADS,
-      CONFIG.STORAGE_KEY_TRADIE_PHONE
+      CONFIG.STORAGE_KEY_TRADIE_PHONE,
+      CONFIG.STORAGE_KEY_DND_START,
+      CONFIG.STORAGE_KEY_DND_END
     ]);
 
     if (!monitoringEnabled) {
@@ -337,7 +369,7 @@ async function handleNewLeadFromContentScript(lead) {
     console.log('🆕 Processing new lead from content script:', lead.leadId);
 
     // Send to backend
-    await sendLeadToBackend(lead, tradiePhone);
+    await sendLeadToBackend(lead, tradiePhone, dndStartHour, dndEndHour);
 
     // Mark as seen
     seenIds.push(lead.leadId);

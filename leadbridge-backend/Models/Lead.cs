@@ -13,9 +13,6 @@ public class Lead
     [JsonPropertyName("customerName")]
     public string CustomerName { get; set; } = string.Empty;
 
-    [JsonPropertyName("customerPhone")]
-    public string CustomerPhone { get; set; } = string.Empty;
-
     [JsonPropertyName("jobType")]
     public string JobType { get; set; } = string.Empty;
 
@@ -36,6 +33,12 @@ public class Lead
 
     [JsonPropertyName("timestamp")]
     public string Timestamp { get; set; } = DateTime.UtcNow.ToString("o");
+
+    [JsonPropertyName("dndStartHour")]
+    public int? DndStartHour { get; set; }
+
+    [JsonPropertyName("dndEndHour")]
+    public int? DndEndHour { get; set; }
 }
 
 /// <summary>

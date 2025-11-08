@@ -16,12 +16,11 @@ public class CallEventEntity : ITableEntity
 
     // Custom properties
     public string LeadId { get; set; } = string.Empty;
-    public string CustomerPhone { get; set; } = string.Empty;
     public string TradiePhone { get; set; } = string.Empty;
     public string JobType { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public string CallId { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty; // Initiated, TradieAnswered, CustomerBridged, Failed, Completed
+    public string Status { get; set; } = string.Empty; // Initiated, Ringing, Answered, Completed, Failed, NoAnswer
     public int DurationSeconds { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? CompletedAt { get; set; }
@@ -42,12 +41,11 @@ public class LeadEntity : ITableEntity
     // Custom properties
     public string LeadId { get; set; } = string.Empty;
     public string CustomerName { get; set; } = string.Empty;
-    public string CustomerPhone { get; set; } = string.Empty;
     public string TradiePhone { get; set; } = string.Empty;
     public string JobType { get; set; } = string.Empty;
     public string Location { get; set; } = string.Empty;
     public DateTime ReceivedAt { get; set; }
-    public string Status { get; set; } = string.Empty; // Received, Calling, Completed, Failed
+    public string Status { get; set; } = string.Empty; // Received, Notified, Skipped, Failed
     public string? CallId { get; set; }
 }
 
@@ -57,12 +55,10 @@ public class LeadEntity : ITableEntity
 public enum CallStatus
 {
     Initiated,
-    TradieRinging,
-    TradieAnswered,
-    CustomerRinging,
-    CustomerBridged,
+    Ringing,
+    Answered,
     Completed,
     Failed,
-    TradieDeclined,
-    CustomerNoAnswer
+    NoAnswer,
+    DndSkipped
 }
